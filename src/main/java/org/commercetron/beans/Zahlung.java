@@ -19,6 +19,13 @@ public class Zahlung {
     private LocalDate zahlungDatum;
     @Column(name = "status", nullable = false)
     private String staus;
+    @Column(name = "rechnungsnummer", nullable = false)
+    private String rechnungsnummer;
+    @Column(name = "betrag", nullable = false)
+    private double betrag;
+    @OneToOne
+    @JoinColumn(name = "warenkorb_id", nullable = false)
+    private Warenkorb warenkorb;
 
 
 }

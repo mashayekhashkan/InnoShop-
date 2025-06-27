@@ -3,7 +3,7 @@ package org.commercetron.interfase;
 import java.util.List;
 import java.util.UUID;
 
-public interface ControllerInterface<T, entity> {
+public interface ControllerInterface<T> {
 
     /**
      * Erstellt eine neue Entität und speichert sie in der Datenbank.

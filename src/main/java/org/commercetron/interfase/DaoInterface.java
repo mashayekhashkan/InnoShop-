@@ -1,5 +1,6 @@
 package org.commercetron.interfase;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface DaoInterface<T, ID> {
@@ -49,7 +50,7 @@ public interface DaoInterface<T, ID> {
      *
      * @return eine Liste aller passenden Entitäten
      */
-    T findAll(T entity);
+    List<T> findAll();
     /**
      * Schließt alle Ressourcen, die mit diesem DAO verbunden sind. Sollte am
      * Ende der Anwendung aufgerufen werden.

@@ -15,10 +15,10 @@ public class Bewertung {
     private UUID bewertungId;
     @OneToOne
     @JoinColumn(name = "customer_id")
-    private UUID customerId;
+    private User user;
     @OneToOne
     @JoinColumn(name = "products_id")
-    private UUID products;
+    private Products products;
     @Column(name = "rating", nullable = false)
     private int rating;
     @Column(name = "comment", nullable = false)

@@ -16,10 +16,10 @@ public class Bestellung {
     private UUID bestellungId;
     @OneToOne
     @JoinColumn(name = "costumerId")
-    private UUID costumerId;
+    private User user;
     @OneToOne
     @JoinColumn(name = "products_id")
-    private UUID productsId;
+    private Products products;
     @Temporal(TemporalType.DATE)
     @Column(name = "bestelldatum", nullable = false)
     private LocalDate bestelldatum;

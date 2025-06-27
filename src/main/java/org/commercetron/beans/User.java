@@ -1,6 +1,7 @@
 package org.commercetron.beans;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -19,6 +20,8 @@ private UUID customerId;
 private String customerName;
 @Column(name = "adresse", nullable = false)
 private String adresse;
+@Email
+@NotBlank
 @Column(name = "email", nullable = false, unique = true)
 private String email;
 @Column(name = "password", nullable = false, length = 225)

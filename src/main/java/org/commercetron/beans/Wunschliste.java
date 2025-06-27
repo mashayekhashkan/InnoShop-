@@ -9,10 +9,15 @@ import java.util.UUID;
 @Data
 @Table(name = "wunschliste")
 public class Wunschliste {
-    @OneToOne
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "wunschliste_id", nullable = false, updatable = false)
+    private UUID id;
+    @OneToOne(optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
-    private UUID customerId;
-    @ManyToMany
+    private User user;
+    @ManyToOne(optional = false)
     @JoinColumn(name = "products_id")
-    private UUID productsId;
+    private Products products;
 }

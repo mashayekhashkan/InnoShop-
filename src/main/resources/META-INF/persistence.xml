@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
-    <persistence-unit name="wifi-persistence-unit" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="persistence.xml" transaction-type="RESOURCE_LOCAL">
         <class>org.justiceleague.beans.Kategorie</class>
         <!-- ← anpassen an deinen tatsächlichen Klassennamen inkl. Package -->
         <class>org.commercetron.beans.Admin</class>
@@ -14,7 +14,7 @@
         <class>org.commercetron.beans.Zahlung</class>
         <properties>
             <!-- JDBC-Verbindung -->
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://127.0.0.1:5432/postgres"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://127.0.0.1:5432/webShop"/>
             <property name="jakarta.persistence.jdbc.user" value="postgres"/>
             <!--      <property name="jakarta.persistence.jdbc.password" value="Icheesse1"/>-->
             <property name="jakarta.persistence.jdbc.password" value="postgres"/>
