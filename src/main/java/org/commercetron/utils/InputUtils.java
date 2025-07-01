@@ -1,6 +1,7 @@
 package org.commercetron.utils;
 
 import org.commercetron.beans.Kategorie;
+import org.commercetron.beans.User;
 import org.commercetron.dao.AdminDAO;
 import org.commercetron.dao.UserDAO;
 import org.commercetron.interfase.DaoInterface;
@@ -11,7 +12,12 @@ import java.util.*;
 
 public final class InputUtils {
 
-private static final UserDAO dao = new UserDAO();
+private static final UserDAO dao = new UserDAO() {
+    @Override
+    public User findByEmail(String email) {
+        return null;
+    }
+};
     private InputUtils() {}                       // Verhindert Instanziierung
 
 

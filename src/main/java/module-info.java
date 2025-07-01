@@ -9,6 +9,8 @@ module InnoShop {
     requires com.sun.jna.platform;
     requires org.hibernate.orm.core;
     requires java.sql;
+    requires vaadin.lumo.theme;
+    requires license.checker;
     opens org.commercetron.beans to org.hibernate.orm.core; // <-- Hier öffnen
     exports org.commercetron.cli;
     exports org.commercetron.dao;

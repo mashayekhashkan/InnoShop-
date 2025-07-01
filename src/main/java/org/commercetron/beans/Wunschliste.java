@@ -1,8 +1,11 @@
 package org.commercetron.beans;
 
+import org.commercetron.beans.Products;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -17,7 +20,11 @@ public class Wunschliste {
     @OneToOne(optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private User user;
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "products_id")
-    private Products products;
+    @ManyToMany
+    @JoinTable(
+            name = "wunsch_liste",
+            joinColumns = @JoinColumn(name = "Wunschliste"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private Set<Products> products = new HashSet<>();
 }

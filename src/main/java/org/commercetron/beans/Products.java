@@ -27,6 +27,6 @@ private String status;
 @Column(name = "preis", nullable = false)
 private double preis;
 @Lob
-@Column(name = "image", columnDefinition = "Blob")
+@Column(name = "image", columnDefinition = "bytea")
 private byte[] image;
 }

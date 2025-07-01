@@ -6,17 +6,28 @@ import org.commercetron.beans.User;
 import java.util.List;
 import java.util.UUID;
 
-public class UserDAO extends BaseDAO<User, UUID> {
+public abstract class UserDAO extends BaseDAO<User, UUID> {
     public UserDAO() {
         super(User.class);
     }
     public List<User> findByEmail(User email) {
         EntityManager em = getEntityManager();
         try {
-            String jpql = "SELECT u FROM User u WHERE u.email = : u.email";
+            String jpql = "SELECT u FROM User u WHERE u.email = : email";
             return em.createQuery(jpql, User.class)
                     .setParameter("email", email)
                     .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public void create(User user) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(user);
+            em.getTransaction().commit();
         } finally {
             em.close();
         }
@@ -46,4 +57,8 @@ public class UserDAO extends BaseDAO<User, UUID> {
             em.close();
         }
     }
+
+
+
+    public abstract User findByEmail(String email);
 }

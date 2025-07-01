@@ -3,13 +3,21 @@ package org.commercetron.cli;
 import org.commercetron.beans.User;
 import org.commercetron.controller.UserController;
 import org.commercetron.dao.UserDAO;
+
 import org.commercetron.utils.InputUtils;
+
+import org.commercetron.utils.UtilsDAO;
 
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class RegistrierenMenu {
-    private static final UserDAO dao = new UserDAO();
+    private static final UserDAO dao = new UserDAO() {
+        @Override
+        public User findByEmail(String email) {
+            return null;
+        }
+    };
     private static final UserController controller = new UserController(dao);
 
     public User register(Scanner scanner) {
@@ -34,10 +42,10 @@ public class RegistrierenMenu {
         System.out.print("Passwort: ");
         String password = InputUtils.readStringInput(scanner, 100);
         User neueAnmeldung = new User();
-        neueAnmeldung.setCustomerName(neueAnmeldung.getCustomerName());
-        neueAnmeldung.setAdresse(neueAnmeldung.getAdresse());
-        neueAnmeldung.setEmail(neueAnmeldung.getEmail());
-        neueAnmeldung.setPassword(neueAnmeldung.getPassword());
+        neueAnmeldung.setCustomerName(name);
+        neueAnmeldung.setAdresse(adresse);
+        neueAnmeldung.setEmail(email);
+        neueAnmeldung.setPassword(password);
         controller.create(neueAnmeldung);
         System.out.println("Registrierung wurde erfolgreich erstellt.");
 

@@ -9,7 +9,7 @@ public class UserController extends BaseController{
     private UserDAO dao;
     public UserController(DaoInterface dao) {
         super(dao);
-        if (dao instanceof AdminDAO){
+        if (dao instanceof UserDAO){
             this.dao = (UserDAO) dao;
         } else {
             throw new IllegalArgumentException("Ungültiges DAO übergeben.");
