@@ -11,6 +11,9 @@ module InnoShop {
     requires java.sql;
     requires vaadin.lumo.theme;
     requires license.checker;
+    requires org.apache.commons.io;
+    requires java.desktop;
+    requires vaadin.avatar.flow;
     opens org.commercetron.beans to org.hibernate.orm.core; // <-- Hier öffnen
     exports org.commercetron.cli;
     exports org.commercetron.dao;

@@ -1,9 +1,9 @@
 package org.commercetron.cli;
 
 import org.commercetron.controller.BaseController;
-import org.commercetron.controller.KategorieController;
+
 import org.commercetron.dao.BaseDAO;
-import org.commercetron.dao.UserDAO;
+
 
 import java.sql.SQLException;
 import java.util.Scanner;

@@ -7,7 +7,7 @@
     <artifactId>InnoShop</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>My Application</name>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -94,7 +94,9 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>11.0.21</version>
                 <configuration>
-                    <scan>2</scan>
+                    <httpConnector>
+                        <port>9090</port>
+                    </httpConnector>
                 </configuration>
             </plugin>
 
