@@ -2,18 +2,21 @@ package org.commercetron.dao;
 
 import jakarta.persistence.EntityManager;
 import org.commercetron.beans.User;
+import org.commercetron.beans.Warenkorb;
 
 import java.util.List;
 import java.util.UUID;
 
-public abstract class UserDAO extends BaseDAO<User, UUID> {
+public class UserDAO extends BaseDAO<User, UUID> {
+
     public UserDAO() {
         super(User.class);
     }
-    public List<User> findByEmail(User email) {
+
+    public List<User> findByEmail(String email) {
         EntityManager em = getEntityManager();
         try {
-            String jpql = "SELECT u FROM User u WHERE u.email = : email";
+            String jpql = "SELECT u FROM User u WHERE u.email = :email";
             return em.createQuery(jpql, User.class)
                     .setParameter("email", email)
                     .getResultList();
@@ -48,17 +51,14 @@ public abstract class UserDAO extends BaseDAO<User, UUID> {
     public boolean emailExists(String email){
         EntityManager em = getEntityManager();
         try {
-            long count = em.createQuery("SELECT COUNT(u) FROM User u" +
-                    "WHERE LOWER(u.email) = LOWER(:email)", long.class)
+            long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE LOWER(u.email) = LOWER(:email)", long.class)
                     .setParameter("email", email.trim())
                     .getSingleResult();
-            return count != 0 && count > 0;
+            return count > 0;
         } finally {
             em.close();
         }
     }
 
 
-
-    public abstract User findByEmail(String email);
 }

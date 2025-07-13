@@ -5,6 +5,8 @@ import org.commercetron.dao.AdminDAO;
 import org.commercetron.dao.UserDAO;
 import org.commercetron.interfase.DaoInterface;
 
+import java.util.List;
+
 public class UserController extends BaseController{
     private UserDAO dao;
     public UserController(DaoInterface dao) {
@@ -16,12 +18,10 @@ public class UserController extends BaseController{
         }
     }
 
-    public User findByEmail(User email){
-        if (dao != null){
+    public User findByEmail(String email){
+        List<User> users = dao.findByEmail(email);
+        return users.isEmpty() ? null : users.get(0);
 
-            return (User) dao.findByEmail(email);
-        }
-        return null;
     }
     /**
      * Sucht einen Teilnehmer anhand seines Namens.

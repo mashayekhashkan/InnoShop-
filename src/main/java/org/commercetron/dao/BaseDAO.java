@@ -11,7 +11,7 @@ import java.util.UUID;
 public abstract class BaseDAO<T, ID> implements DaoInterface<T, ID> {
 
     protected static final EntityManagerFactory EMF
-            = Persistence.createEntityManagerFactory("persistence.xml");
+            = Persistence.createEntityManagerFactory("persistence-unit");
 
     protected final Class<T> entityClass;
 

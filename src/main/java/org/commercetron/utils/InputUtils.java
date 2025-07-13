@@ -1,10 +1,6 @@
 package org.commercetron.utils;
 
-import org.commercetron.beans.Kategorie;
-import org.commercetron.beans.User;
-import org.commercetron.dao.AdminDAO;
 import org.commercetron.dao.UserDAO;
-import org.commercetron.interfase.DaoInterface;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -12,12 +8,7 @@ import java.util.*;
 
 public final class InputUtils {
 
-private static final UserDAO dao = new UserDAO() {
-    @Override
-    public User findByEmail(String email) {
-        return null;
-    }
-};
+private static final UserDAO dao = new UserDAO();
     private InputUtils() {}                       // Verhindert Instanziierung
 
 
@@ -149,12 +140,13 @@ private static final UserDAO dao = new UserDAO() {
         return !dao.emailExists(email);
     }
 
-    public static void isValidDateEmailInput(String email){
+    public static boolean isValidDateEmailInput(String email){
         if (!isValidEmailFormat(email)){
             throw new IllegalArgumentException("Ungültiges E-Mail-Format.");
         }
         if (!isEmailAvailable(email)){
             throw new IllegalArgumentException("Diese E-Mail ist bereits vergeben.");
         }
+        return false;
     }
 }

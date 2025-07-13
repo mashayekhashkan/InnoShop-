@@ -14,6 +14,13 @@ module InnoShop {
     requires org.apache.commons.io;
     requires java.desktop;
     requires vaadin.avatar.flow;
+    requires vaadin.form.layout.flow;
+    requires vaadin.text.field.flow;
+    requires vaadin.date.picker.flow;
+    requires vaadin.login.flow;
+    requires vaadin.notification.flow;
+    requires vaadin.combo.box.flow;
+    requires vaadin.messages.flow;
     opens org.commercetron.beans to org.hibernate.orm.core; // <-- Hier öffnen
     exports org.commercetron.cli;
     exports org.commercetron.dao;
