@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import org.commercetron.beans.User;
@@ -62,11 +63,12 @@ public class AnmeldungView extends Composite<VerticalLayout> {
             User user = controller.findByEmail(username);
 
             if (user != null && user.getPassword().equals(password)) {
-
+                VaadinSession.getCurrent().setAttribute(User.class, user);
                 getUI().ifPresent(ui -> ui.navigate("home"));
             } else {
                 loginForm.setError(true);
             }
+
         });
     }
 }

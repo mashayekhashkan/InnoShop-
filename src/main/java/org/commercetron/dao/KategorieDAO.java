@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class KategorieDAO extends BaseDAO<Kategorie, UUID> {
-    protected KategorieDAO() {
+    public KategorieDAO() {
         super(Kategorie.class);
     }
     public List<Kategorie> findByName(String name) {
@@ -21,4 +21,6 @@ public class KategorieDAO extends BaseDAO<Kategorie, UUID> {
             em.close();
         }
     }
+
+
 }

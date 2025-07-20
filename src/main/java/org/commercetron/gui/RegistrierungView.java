@@ -72,7 +72,7 @@ public class RegistrierungView extends Composite<VerticalLayout> {
             User user = null;
             try {
                 user = new User();
-                user.setCustomerName(name);
+                user.setUser(name);
                 user.setAdresse(adresse);
                 user.setGeburtstag(geburtstag);
                 user.setPassword(passwort);

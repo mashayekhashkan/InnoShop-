@@ -15,4 +15,21 @@ public class Kategorie {
 private UUID kategorieId;
 @Column(name = "name", nullable = false)
 private String name;
+
+    public UUID getKategorieId() {
+
+        return kategorieId;
+    }
+
+    public void setKategorieId(UUID kategorieId) {
+        this.kategorieId = kategorieId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -17,7 +17,7 @@ public class WunschlisteDAO extends BaseDAO<Wunschliste, UUID> {
         try {
             String jpql = "SELECT u FROM User u WHERE u.UserId = :UserId";
             return em.createQuery(jpql, Wunschliste.class)
-                    .setParameter("teilnehmer_id", userId).getResultList();
+                    .setParameter("userId", userId).getResultList();
         } finally {
             em.close();
         }

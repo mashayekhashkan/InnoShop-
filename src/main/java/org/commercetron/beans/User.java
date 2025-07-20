@@ -20,10 +20,10 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "customer_id", nullable = false, updatable = false)
-    private UUID customerId;
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID userId;
     @Column(name = "name", nullable = false)
-    private String customerName;
+    private String user;
     @Column(name = "adresse", nullable = false)
     private String adresse;
     @Temporal(TemporalType.DATE)
@@ -37,13 +37,30 @@ public class User {
     @NotBlank
     @Size(min = 8)
     private String password;
+    @OneToOne
+    @JoinColumn(name = "warenkorb_id", nullable = false)
+    private Warenkorb warenkorb;
+    @OneToMany
+    @JoinColumn(name = "bestellung_id", nullable = false)
+    private Bestellung bestellung;
+    @OneToOne(optional = false)
+    @JoinColumn(name = "wunschliste_id", nullable = false)
+    private Wunschliste wunschliste;
 
-    public String getCustomerName() {
-        return customerName;
+    public UUID getUserId() {
+        return userId;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public String getAdresse() {
@@ -76,5 +93,29 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Warenkorb getWarenkorb() {
+        return warenkorb;
+    }
+
+    public void setWarenkorb(Warenkorb warenkorb) {
+        this.warenkorb = warenkorb;
+    }
+
+    public Bestellung getBestellung() {
+        return bestellung;
+    }
+
+    public void setBestellung(Bestellung bestellung) {
+        this.bestellung = bestellung;
+    }
+
+    public Wunschliste getWunschliste() {
+        return wunschliste;
+    }
+
+    public void setWunschliste(Wunschliste wunschliste) {
+        this.wunschliste = wunschliste;
     }
 }

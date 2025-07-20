@@ -13,13 +13,8 @@ import java.util.UUID;
 public class BstellungController extends BestellungDAO {
     private BestellungDAO dao;
 
-    public BstellungController(DaoInterface dao) {
-        super(dao);
-        if (dao instanceof BestellungDAO) {
-            this.dao = (BestellungDAO) dao;
-        } else {
-            throw new IllegalArgumentException("Ungültiges DAO übergeben.");
-        }
+    public BstellungController() {
+        this.dao = new BestellungDAO();
     }
 
     public List<Bestellung> getBestellungViaDate(LocalDate date) {

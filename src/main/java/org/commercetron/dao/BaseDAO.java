@@ -50,6 +50,7 @@ public abstract class BaseDAO<T, ID> implements DaoInterface<T, ID> {
             em.getTransaction().begin();
             T updateEntity = em.merge(entity);
             em.getTransaction().commit();
+            return updateEntity;
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -59,7 +60,7 @@ public abstract class BaseDAO<T, ID> implements DaoInterface<T, ID> {
         } finally {
             em.close();
         }
-        return null;
+
     }
 
     @Override
@@ -67,7 +68,7 @@ public abstract class BaseDAO<T, ID> implements DaoInterface<T, ID> {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
-            if (!em.contains(em)) {
+            if (!em.contains(entity)) {
                 entity = em.merge(entity);
             }
             em.remove(entity);
@@ -98,7 +99,7 @@ public abstract class BaseDAO<T, ID> implements DaoInterface<T, ID> {
     public List<T> findAll() {
         EntityManager em = getEntityManager();
         try {
-            String jpql = "SELECT e FROM" + entityClass.getSimpleName() + "e";
+            String jpql = "SELECT e FROM " + entityClass.getSimpleName() + " e";
             return em.createQuery(jpql, entityClass).getResultList();
         } finally {
             em.close();

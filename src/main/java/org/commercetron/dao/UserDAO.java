@@ -60,5 +60,15 @@ public class UserDAO extends BaseDAO<User, UUID> {
         }
     }
 
+    public List<User> findByUserId(UUID costumerId) {
+        EntityManager em = getEntityManager();
+        try {
+            String jpql = "SELECT u FROM User u WHERE u.name.userId = :userId";
+            return em.createQuery(jpql, User.class)
+                    .setParameter("userId", costumerId).getResultList();
+        } finally {
+            em.close();
+        }
+    }
 
 }
