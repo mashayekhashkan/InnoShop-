@@ -16,8 +16,7 @@ public class Warenkorb {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "warenkorb_id", nullable = false, updatable = false)
     private UUID warenkorbId;
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @OneToOne(mappedBy = "warenkorb")
     private User user;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "warenkorb_produkte", joinColumns = @JoinColumn(name = "warenkorb_id"))

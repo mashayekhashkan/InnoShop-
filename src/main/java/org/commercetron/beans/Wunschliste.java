@@ -17,14 +17,37 @@ public class Wunschliste {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "wunschliste_id", nullable = false, updatable = false)
     private UUID id;
-    @OneToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @OneToOne(mappedBy = "wunschliste")
     private User user;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "wunsch_liste",
             joinColumns = @JoinColumn(name = "Wunschliste"),
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private Set<Products> products = new HashSet<>();
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Set<Products> getProducts() {
+        return products;
+    }
+
+    public void setProducts(Set<Products> products) {
+        this.products = products;
+    }
 }

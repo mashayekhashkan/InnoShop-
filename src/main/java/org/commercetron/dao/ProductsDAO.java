@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ProductsDAO extends BaseDAO<Products, UUID> {
-    protected ProductsDAO() {
+    public ProductsDAO() {
         super(Products.class);
     }
 
@@ -27,8 +27,9 @@ public class ProductsDAO extends BaseDAO<Products, UUID> {
     public List<Products> findByKategorie(Kategorie kategorie) {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT p FROM Products p WHERE p.kategorie = :kategorie", Products.class)
-                    .setParameter("kategorie", kategorie)
+            String jpql = "SELECT p FROM Products p WHERE p.kategorie.kategorieId = :id";
+            return em.createQuery(jpql, Products.class)
+                    .setParameter("id", kategorie.getKategorieId())
                     .getResultList();
         } finally {
             em.close();

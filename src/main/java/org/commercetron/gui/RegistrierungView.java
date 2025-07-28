@@ -17,6 +17,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.commercetron.beans.User;
+import org.commercetron.beans.Warenkorb;
+import org.commercetron.beans.Wunschliste;
 import org.commercetron.controller.BaseController;
 import org.commercetron.controller.UserController;
 import org.commercetron.dao.BaseDAO;
@@ -25,6 +27,9 @@ import org.commercetron.utils.InputUtils;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.TreeSet;
 
 @Route("registrieren")
 @PageTitle("Registrieren")
@@ -77,6 +82,19 @@ public class RegistrierungView extends Composite<VerticalLayout> {
                 user.setGeburtstag(geburtstag);
                 user.setPassword(passwort);
                 user.setEmail(email);
+
+                Warenkorb warenkorb = new Warenkorb();
+                warenkorb.setUser(user);
+                warenkorb.setProdukteMitMenge(new HashMap<>());
+                warenkorb.setGesamtPreis(0.0);
+                warenkorb.setVersandPreis(0.0);
+
+                Wunschliste wunschliste = new Wunschliste();
+                wunschliste.setUser(user);
+                wunschliste.setProducts(new HashSet<>());
+
+                user.setWarenkorb(warenkorb);
+                user.setWunschliste(wunschliste);
 
                 // Validierung
 //                if (!InputUtils.isValidDateEmailInput(user.getEmail())) {

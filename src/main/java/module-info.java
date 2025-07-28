@@ -24,6 +24,8 @@ module InnoShop {
     requires vaadin.tabs.flow;
     requires vaadin.list.box.flow;
     requires vaadin.renderer.flow;
+    requires flow.data;
+    requires vaadin.upload.flow;
     opens org.commercetron.beans to org.hibernate.orm.core; // <-- Hier öffnen
     exports org.commercetron.cli;
     exports org.commercetron.dao;

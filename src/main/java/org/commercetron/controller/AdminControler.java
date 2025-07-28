@@ -17,7 +17,7 @@ public class AdminControler extends BaseController{
 
     public Admin findByname(Admin name) {
         if (dao != null) {
-            return (Admin) dao.findByName(String.valueOf(name));
+            return (Admin) dao.findByExactName(String.valueOf(name));
         }
         return null;
     }

@@ -8,10 +8,7 @@ import org.hibernate.annotations.Type;
 
 import java.sql.Blob;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 
 @Entity
@@ -38,6 +35,8 @@ private double preis;
 @Basic(fetch = FetchType.EAGER)
 @Column(name = "image", columnDefinition = "bytea")
 private byte[] image;
+    @OneToMany(mappedBy = "products", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bewertung> bewertungen = new ArrayList<>();
 
     public UUID getProductsId() {
         return productsId;
@@ -93,6 +92,14 @@ private byte[] image;
 
     public void setImage(byte[] image) {
         this.image = image;
+    }
+
+    public List<Bewertung> getBewertungen() {
+        return bewertungen;
+    }
+
+    public void setBewertungen(List<Bewertung> bewertungen) {
+        this.bewertungen = bewertungen;
     }
 
     @Override

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -37,13 +39,12 @@ public class User {
     @NotBlank
     @Size(min = 8)
     private String password;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "warenkorb_id", nullable = false)
     private Warenkorb warenkorb;
-    @OneToMany
-    @JoinColumn(name = "bestellung_id", nullable = false)
-    private Bestellung bestellung;
-    @OneToOne(optional = false)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List <Bestellung> bestellung = new ArrayList<>();
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "wunschliste_id", nullable = false)
     private Wunschliste wunschliste;
 
@@ -103,11 +104,11 @@ public class User {
         this.warenkorb = warenkorb;
     }
 
-    public Bestellung getBestellung() {
+    public List<Bestellung> getBestellung() {
         return bestellung;
     }
 
-    public void setBestellung(Bestellung bestellung) {
+    public void setBestellung(List<Bestellung> bestellung) {
         this.bestellung = bestellung;
     }
 

@@ -21,4 +21,28 @@ public class Admin {
     @Size(min = 8)
     @Column(name = "admin_password", nullable = false, length = 225)
     private String password;
+
+    public UUID getAdminId() {
+        return adminId;
+    }
+
+    public void setAdminId(UUID adminId) {
+        this.adminId = adminId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

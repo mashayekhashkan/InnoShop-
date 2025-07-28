@@ -1,6 +1,5 @@
 package org.commercetron.gui;
 
-
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.login.LoginForm;
@@ -13,20 +12,22 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
+import org.commercetron.beans.Admin;
 import org.commercetron.beans.User;
 import org.commercetron.controller.UserController;
+import org.commercetron.dao.AdminDAO;
 import org.commercetron.dao.UserDAO;
 
-
-@Route("anmelden")
-@PageTitle("Anmelden")
+@Route("adminLoginView")
+@PageTitle("AdminLoginView")
 @AnonymousAllowed
-public class AnmeldungView extends Composite<VerticalLayout> {
-    private final UserDAO dao = new UserDAO();
-    private final UserController controller = new UserController(dao);
+public class AdminLoginView extends Composite<VerticalLayout> {
+    private final AdminDAO dao = new AdminDAO();
 
-    public AnmeldungView() {
+
+    public AdminLoginView () {
         initLayout();
     }
 
@@ -37,19 +38,19 @@ public class AnmeldungView extends Composite<VerticalLayout> {
 
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
-        getContent().setJustifyContentMode(JustifyContentMode.START);
-        getContent().setAlignItems(Alignment.END);
+        getContent().setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        getContent().setAlignItems(FlexComponent.Alignment.END);
         layoutRow.setWidthFull();
         getContent().setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.MEDIUM);
+        layoutRow.addClassName(LumoUtility.Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.getStyle().set("flex-grow", "1");
         layoutRow2.setHeightFull();
         layoutRow.setFlexGrow(1.0, layoutRow2);
-        layoutRow2.addClassName(Gap.MEDIUM);
+        layoutRow2.addClassName(LumoUtility.Gap.MEDIUM);
         layoutRow2.setWidth("100%");
         layoutRow2.getStyle().set("flex-grow", "1");
-        layoutRow2.setAlignSelf(Alignment.CENTER, loginForm);
+        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, loginForm);
         loginForm.getStyle().set("width", "100%");
         getContent().add(layoutRow);
         layoutRow.add(layoutRow2);
@@ -61,12 +62,12 @@ public class AnmeldungView extends Composite<VerticalLayout> {
             String password = e.getPassword();
 
 
-            User user = controller.findByEmail(username);
+            Admin admin = (Admin) dao.findByExactName(username);
 
-            if (user != null && user.getPassword().equals(password)) {
-                VaadinSession.getCurrent().setAttribute(User.class, user);
-                getUI().ifPresent(ui -> ui.navigate("home"));
-                UI.getCurrent().navigate(HomeView.class);
+            if (admin != null && admin.getPassword().equals(password)) {
+                VaadinSession.getCurrent().setAttribute(Admin.class, admin);
+                getUI().ifPresent(ui -> ui.navigate("adminView"));
+                UI.getCurrent().navigate(AdminView.class);
             } else {
                 loginForm.setError(true);
             }
@@ -74,4 +75,3 @@ public class AnmeldungView extends Composite<VerticalLayout> {
         });
     }
 }
-

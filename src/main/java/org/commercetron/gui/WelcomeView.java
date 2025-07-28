@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
@@ -100,18 +101,30 @@ public class WelcomeView extends Composite<VerticalLayout> {
 
             productCard.add(image, name, preis);
             layoutRow4.add(productCard);
+
         }
 
-//        Avatare hinzufügen
-//        for (int i = 0; i < 4; i++) {
-//            Avatar avatar = new Avatar("Name Preis");
-//            avatar.setWidth("280px");
-//            avatar.setHeight("280px");
-//            layoutRow4.add(avatar);
-//        }
-//
+
         layoutRow3.add(layoutRow4);
         getContent().add(layoutRow3);
+
+        Button adminButton = new Button(".");
+        adminButton.getStyle()
+                .set("background", "transparent")
+                .set("color", "transparent")
+                .set("border", "none")
+                .set("font-size", "8px")
+                .set("padding", "0")
+                .set("position", "absolute")
+                .set("bottom", "5px")
+                .set("left", "5px");
+
+        adminButton.addClickListener(e ->
+                getUI().ifPresent(ui -> ui.navigate("adminLoginView"))
+        );
+
+        getContent().add(adminButton);
+
     }
 }
 
