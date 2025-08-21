@@ -6,16 +6,32 @@ import org.commercetron.interfase.DaoInterface;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Generischer Basiskontroller für CRUD-Operationen.
+ *
+ * @param <T> Der Entitätstyp, den der Controller verwaltet.
+ */
 public class BaseController<T> implements ControllerInterface<T> {
 
     private DaoInterface<T, UUID> dao;
 
+    /**
+     * Konstruktor für den Basiskontroller.
+     *
+     * @param dao Das DAO-Interface zur Verwaltung der Entitäten.
+     */
     public BaseController(DaoInterface<T, UUID> dao) {
         this.dao = dao;
     }
 
+    /**
+     * Erstellt eine neue Entität in der Datenbank.
+     *
+     * @param entity Die zu speichernde Entität
+     * @return Die gespeicherte Entität oder null bei Fehler
+     */
     @Override
-    public T create(T entity){
+    public T create(T entity) {
         try {
             return dao.save(entity);
         } catch (RuntimeException e) {
@@ -24,6 +40,12 @@ public class BaseController<T> implements ControllerInterface<T> {
         return null;
     }
 
+    /**
+     * Sucht eine Entität anhand der ID.
+     *
+     * @param id Die UUID der Entität
+     * @return Die gefundene Entität oder null, wenn nicht gefunden
+     */
     @Override
     public T getById(UUID id) {
         try {
@@ -34,6 +56,11 @@ public class BaseController<T> implements ControllerInterface<T> {
         return null;
     }
 
+    /**
+     * Liefert alle Entitäten zurück.
+     *
+     * @return Liste aller Entitäten oder null bei Fehler
+     */
     @Override
     public List<T> getAll() {
         try {
@@ -44,6 +71,12 @@ public class BaseController<T> implements ControllerInterface<T> {
         return null;
     }
 
+    /**
+     * Aktualisiert eine vorhandene Entität.
+     *
+     * @param entity Die zu aktualisierende Entität
+     * @return Die aktualisierte Entität oder null bei Fehler
+     */
     @Override
     public T update(T entity) {
         try {
@@ -54,6 +87,12 @@ public class BaseController<T> implements ControllerInterface<T> {
         return null;
     }
 
+    /**
+     * Löscht eine Entität.
+     *
+     * @param entity Die zu löschende Entität
+     * @return true, wenn erfolgreich, sonst false
+     */
     @Override
     public boolean delete(T entity) {
         try {
@@ -65,10 +104,16 @@ public class BaseController<T> implements ControllerInterface<T> {
         return false;
     }
 
+    /**
+     * Löscht eine Entität anhand ihrer ID.
+     *
+     * @param id Die UUID der zu löschenden Entität
+     * @return true, wenn erfolgreich, sonst false
+     */
     @Override
     public boolean deleteById(UUID id) {
         T entity = getById(id);
-        if (entity!= null) {
+        if (entity != null) {
             return delete(entity);
         }
         return false;

@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+<!--
+    Persistence-Konfigurationsdatei (Jakarta Persistence API, Version 3.0)
+    Definiert die Persistence-Unit für den Zugriff auf die Datenbank.
+-->
+<persistence version="3.0"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <!-- Definition der Persistence-Unit mit lokalem Transaktionstyp -->
     <persistence-unit name="persistence-unit" transaction-type="RESOURCE_LOCAL">
-        <class>org.justiceleague.beans.Kategorie</class>
-        <!-- ← anpassen an deinen tatsächlichen Klassennamen inkl. Package -->
+
+        <!-- Registrierung der persistierbaren Java-Klassen (Entities) -->
+        <!-- ⚠️ Stelle sicher, dass alle Klassen korrekt importiert und implementiert sind -->
+        <class>org.justiceleague.beans.Kategorie</class> <!-- Möglicherweise veralteter Eintrag? -->
         <class>org.commercetron.beans.Admin</class>
         <class>org.commercetron.beans.Bestellung</class>
         <class>org.commercetron.beans.Bewertung</class>
@@ -12,17 +23,26 @@
         <class>org.commercetron.beans.Warenkorb</class>
         <class>org.commercetron.beans.Wunschliste</class>
         <class>org.commercetron.beans.Zahlung</class>
+
+        <!-- Datenbankverbindung und JPA-spezifische Einstellungen -->
         <properties>
-            <!-- JDBC-Verbindung -->
+
+            <!-- JDBC-Verbindungsdaten -->
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://127.0.0.1:5432/webShop"/>
             <property name="jakarta.persistence.jdbc.user" value="postgres"/>
-            <!--      <property name="jakarta.persistence.jdbc.password" value="Icheesse1"/>-->
-            <property name="jakarta.persistence.jdbc.password" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="postgres"/> <!-- 🔐 Passwort ggf. absichern -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <!-- Hibernate spezifisch -->
+
+            <!-- Hibernate-spezifische Eigenschaften -->
+            <!-- Wählt den passenden SQL-Dialekt für PostgreSQL -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+
+            <!-- Automatisches Update des DB-Schemas (nur für Entwicklung empfohlen) -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
+
+            <!-- SQL-Ausgabe in der Konsole zur Fehlerdiagnose -->
             <property name="hibernate.show_sql" value="true"/>
+
         </properties>
     </persistence-unit>
 </persistence>

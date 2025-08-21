@@ -1,6 +1,5 @@
 package org.commercetron.gui;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -8,11 +7,18 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.EmailField;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -26,105 +32,131 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 
 
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 
+import java.text.Normalizer;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
-import com.vaadin.flow.theme.lumo.LumoUtility;
 import lombok.Setter;
 import org.commercetron.beans.*;
 
+import org.commercetron.controller.*;
 import org.commercetron.dao.*;
+import org.commercetron.utils.InputUtils;
 
 
 @PageTitle("Home")
 @Route("home")
-
 public class HomeView extends Composite<VerticalLayout> {
 
-    private final ProductsDAO dao;
-    private final KategorieDAO katDao;
-    private MultiSelectListBox<Products> avatarItems = new MultiSelectListBox<>();
-    private VerticalLayout einkaufswagenLayout;
-    private final List<Products> einkaufswagen = new ArrayList<>();
-    private VerticalLayout kassaLayout;
-    private final List<List<Products>> bestellverlauf = new ArrayList<>();
-    private VerticalLayout bestellungLayout;
-    private final BestellungDAO bestellungDAO;
-    private Warenkorb warenkorb;
-    private final WarenkorbDAO warenkorbDAO = new WarenkorbDAO(Warenkorb.class);
-    private final WunschlisteDAO wunschlisteDAO = new WunschlisteDAO();
-    private MultiSelectListBox<Products> merklisteBox = new MultiSelectListBox<>();
-    private ZahlungDAO zahlungDAO = new ZahlungDAO();
-    private final BewertungDAO bewertungDAO = new BewertungDAO();
-    private VerticalLayout productsInfoLayout = new VerticalLayout();
-    private VerticalLayout merklisteLayout = new VerticalLayout();
-    private final List<Products> merkliste = new ArrayList<>();
+    // --- DAO-Objekte für Datenbankzugriffe ---
+    private final ProductsDAO  dao = new ProductsDAO();         // DAO für Produkte
+    private final ProductsController productsController;
+    private final KategorieDAO katDao;      // DAO für Kategorien
+    private final KategorieController kategorieController;
+    private final BestellungDAO bestellungDAO;// DAO für Bestellungen
+    private final BestellungController bstellungController;
+    private final WarenkorbController warenkorbController;
+    private final WunschlisteDAO wunschlisteDAO  = new WunschlisteDAO();        // DAO für Wunschliste
+    private final WunchlisteCntroller wunchlisteCntroller;
+    private final ZahlungDAO zahlungDAO; // DAO für Zahlungen
+    private final ZahlungController zahlungController;
+    private final BewertungDAO bewertungDAO; // DAO für Bewertungen
+    private final BewertungController bewertungController;
+    private final UserDAO userDAO;                               // DAO für User
+    private final UserController userController;
 
-    // Setze den aktuellen Benutzer
+    // --- UI-Komponenten ---
+    private MultiSelectListBox<Products> avatarItems = new MultiSelectListBox<>(); // Produktübersicht / Auswahl
+    private MultiSelectListBox<Products> merklisteBox = new MultiSelectListBox<>(); // Wunschliste
+    private VerticalLayout einkaufswagenLayout;    // Layout für Einkaufswagen
+    private VerticalLayout kassaLayout;            // Layout für Kassa/Bezahlung
+    private VerticalLayout bestellungLayout;       // Layout für Bestellübersicht
+    private VerticalLayout productsInfoLayout = new VerticalLayout(); // Detailinformationen zum ausgewählten Produkt
+    private VerticalLayout merklisteLayout = new VerticalLayout();    // Layout für Merkliste
+    private Image productImage = new Image();      // Anzeige für Produktbilder
+    private Tab searchTab;                          // Tab für Suchergebnisse
+
+    // --- Geschäftslogik / Datenhaltung ---
+    private final List<Products> einkaufswagen = new ArrayList<>(); // temporäre lokale Einkaufswagenliste
+    private final List<List<Products>> bestellverlauf = new ArrayList<>(); // lokale Historie
+    private final List<Products> merkliste = new ArrayList<>();      // lokale Wunschliste
+    private Map<Tab, Kategorie> tabToCategory = new HashMap<>();     // Zuordnung Tab -> Kategorie
+    private int passwortVersuche = 0;                               // Zähler für Loginversuche
+    private long passwortSperreBis = 0;                              // Zeitstempel Sperre
+
+    private Warenkorb warenkorb;                                     // aktuelle Warenkorbinstanz
+
+    // --- Aktueller Benutzer ---
     @Setter
     private User currentUser;
 
-
-    //    private Avatar avatar = new Avatar();
-    private Image productImage = new Image();
-
     /**
      * Konstruktor der HomeView – Hauptansicht nach erfolgreicher Benutzeranmeldung.
-     * Initialisiert DAOs, prüft den angemeldeten Benutzer, und lädt die UI-Komponenten.
+     * Initialisiert DAOs, prüft den angemeldeten Benutzer, lädt die UI-Komponenten
+     * und synchronisiert Wunschliste mit der Datenbank.
      */
     public HomeView() {
-        // Initialisierung der DAO-Objekte für Datenzugriffe
+
+        // DAO-Initialisierung
         this.bestellungDAO = new BestellungDAO();
-        this.katDao = new KategorieDAO();
 
-        // DAO für Produktzugriffe – anonyme Instanz (kann ggf. später überschrieben/erweitert werden)
-        this.dao = new ProductsDAO() {
-        };
+        ProductsDAO dao = new ProductsDAO(); // hier initialisieren
+        this.productsController = new ProductsController(dao);
+        this.katDao  = new KategorieDAO(); // hier initialisieren
+        this.kategorieController = new KategorieController(katDao);
+        BestellungDAO bestellungDAO  = new BestellungDAO(); // hier initialisieren
+        this.bstellungController= new BestellungController(bestellungDAO);
+        WarenkorbDAO warenkorbDAO = new WarenkorbDAO(Warenkorb.class);
+        this.warenkorbController = new WarenkorbController(warenkorbDAO);//        this.wunschlisteDAO = wunschlisteDAO;
+        this.wunchlisteCntroller = new WunchlisteCntroller(wunschlisteDAO);
+        this.zahlungDAO = new ZahlungDAO();
+        this.zahlungController = new ZahlungController(zahlungDAO);
+        this.bewertungDAO = new BewertungDAO();
+        this.bewertungController = new BewertungController(bewertungDAO);
+        this.userDAO = new UserDAO();
+        this.userController = new UserController(userDAO);
 
-        // Abruf des aktuell angemeldeten Benutzers aus der aktuellen Vaadin-Session
+        // Abruf des aktuell angemeldeten Benutzers aus Vaadin-Session
         this.currentUser = (User) VaadinSession.getCurrent().getAttribute(User.class);
 
-        // Sicherheitsprüfung: Falls kein Benutzer angemeldet ist, Weiterleitung zur Anmeldeseite
+        // Sicherheitsprüfung: kein Benutzer angemeldet -> Weiterleitung zur Login-Seite
         if (this.currentUser == null) {
             UI.getCurrent().navigate("anmeldung");
             return;
         }
 
-        // Initialisierung des UI-Layouts (Header, Produktauswahl, Tabs etc.)
+        // Aufbau der UI-Komponenten
         initLayout();
 
-        // Wunschliste aus der Datenbank laden und initial anzeigen
+        // Wunschliste initial laden
         updateWunschlisteFromDatabase();
     }
 
     /**
-     * Initialisiert das Hauptlayout der View für die Shop-Oberfläche.
-     * Enthält die Kopfzeile, Produktauswahl, Produktinformationen, Aktionsbuttons
-     * sowie Tabs für Einkaufswagen, Merkliste, Bestellungen und Kasse.
+     * Initialisiert das Hauptlayout der Startseite.
+     * Diese Methode baut die Benutzeroberfläche für die Produktübersicht,
+     * Produktauswahl, Interaktionen wie Warenkorb/Merkliste sowie die Navigation über Tabs auf.
      */
     private void initLayout() {
 
-        // --- Kopfzeile mit Shop-Titel ---
+        // ---------- Kopfzeile mit Shop-Titel und Suchfeld ----------
         HorizontalLayout layoutRow = new HorizontalLayout();
         layoutRow.setWidthFull();
-        layoutRow.setHeight("100px"); // Moderner, kompakter Header
+        layoutRow.setHeight("100px");
         layoutRow.setPadding(true);
         layoutRow.setSpacing(true);
         layoutRow.setAlignItems(FlexComponent.Alignment.CENTER);
         layoutRow.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-
-        // Optionales Styling: dezenter Hintergrund und Schatten für optische Trennung
         layoutRow.getStyle()
                 .set("background-color", "#f9f9f9")
                 .set("border-bottom", "1px solid #e0e0e0")
                 .set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.03)");
 
-        // Shop-Titel
         H1 h1 = new H1("🛍️ InnoShop");
         h1.getStyle()
                 .set("margin", "0")
@@ -132,135 +164,408 @@ public class HomeView extends Composite<VerticalLayout> {
                 .set("font-weight", "600")
                 .set("color", "#333");
 
-        layoutRow.add(h1); // Titel dem Header-Layout hinzufügen
+        TextField searchField = new TextField();
+        searchField.setPlaceholder("Produkt suchen...");
+        searchField.setClearButtonVisible(true);
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
 
-        // --- Haupt-Layout (Vertical) vorbereiten ---
+        layoutRow.add(h1, searchField); // Header-Layout mit Titel und Suche
+
+        // ---------- Gesamtlayout vorbereiten ----------
         VerticalLayout mainLayout = getContent();
-        mainLayout.removeAll();           // Vorherige Inhalte löschen
+        mainLayout.removeAll();
         mainLayout.setWidthFull();
-        mainLayout.add(layoutRow);        // Header hinzufügen
+        mainLayout.add(layoutRow); // Header hinzufügen
 
-        // --- 1. Produktauswahl-Bereich ---
-        // Kategorieauswahl über ComboBox
-        ComboBox<Kategorie> comboBox = new ComboBox<>("Kategorie wählen");
-        comboBox.setWidth("200px");
-        setComboBoxSampleData(comboBox); // Initialisiere mit Kategorien und Listener
+        // ---------- Kategorie-Tabs ----------
+        Tabs categoryTabs = new Tabs();
+        categoryTabs.setWidth("600px");
+        setCategoryTabs(categoryTabs, avatarItems); // Tabs aus Datenquelle initialisieren
 
-        // Avatar-Galerie für Produktauswahl
+        // ---------- Produktauswahl-Bereich ----------
         avatarItems.setWidth("300px");
 
-        // Produktbildanzeige
-        productImage.setWidth("180px");
-        productImage.setHeight("250px");
+        // Produktbild
+        productImage.setWidth("160px");
+        productImage.setHeight("200px");
+        productImage.getStyle().set("object-fit", "contain"); // Kein Verzerren
 
-        // Aktions-Buttons
+        // Buttons für Warenkorb und Merkliste
         Button buttonPrimary = new Button("In den Einkaufswagen");
         buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button buttonPrimary2 = new Button("Merkliste hinzufügen");
         buttonPrimary2.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // Produktinformationsbereich
+        // Produktinfo-Bereich
         productsInfoLayout.setId("product-info");
         productsInfoLayout.setWidth("300px");
 
-        // Layout zur horizontalen Anordnung von Kategorie, Produkten, Bild, Info & Buttons
-        HorizontalLayout produktAuswahlLayout = new HorizontalLayout(
-                comboBox,
+        // Button-Layout
+        HorizontalLayout buttonLayout = new HorizontalLayout(buttonPrimary, buttonPrimary2);
+        buttonLayout.setWidth("150px");
+        buttonLayout.setSpacing(true);
+        buttonLayout.setPadding(false);
+        buttonLayout.getStyle()
+                .set("margin-top", "10px")
+                .set("align-items", "stretch");
+        buttonPrimary.setWidthFull();
+        buttonPrimary2.setWidthFull();
+
+        // Linker Bereich mit Produktbild und Buttons
+        VerticalLayout leftLayout = new VerticalLayout();
+        leftLayout.setHeight("280px");
+        leftLayout.setWidth("250px");
+        leftLayout.setPadding(false);
+        leftLayout.setSpacing(false);
+        leftLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        Div spacer = new Div(); // Platzhalter für gleichmäßige Verteilung
+        spacer.setWidthFull();
+        spacer.setHeightFull();
+        leftLayout.add(productImage, spacer, buttonLayout);
+        leftLayout.expand(spacer);
+
+        // Rechter Bereich mit Produktinformationen
+        VerticalLayout rightInfoLayout = new VerticalLayout();
+        rightInfoLayout.setWidth("220px");
+        rightInfoLayout.setHeight("220px");
+        rightInfoLayout.getStyle().set("overflow", "hidden");
+        rightInfoLayout.setSpacing(true);
+        rightInfoLayout.setPadding(false);
+
+        productsInfoLayout.setWidthFull();
+        productsInfoLayout.setHeightFull();
+        productsInfoLayout.getStyle().set("overflow", "auto");
+        rightInfoLayout.add(productsInfoLayout);
+        rightInfoLayout.expand(productsInfoLayout);
+
+        // Komplette Produkt-Detailkarte
+        HorizontalLayout productCard = new HorizontalLayout(leftLayout, rightInfoLayout);
+        productCard.setSpacing(true);
+        productCard.setWidth("550px");
+        productCard.setHeight("320px");
+        productCard.getStyle()
+                .set("border", "1px solid #ccc")
+                .set("border-radius", "8px")
+                .set("padding", "1rem")
+                .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                .set("background-color", "white");
+
+        // Hauptbereich mit Produktauswahl und Detailansicht
+        HorizontalLayout mainContentLayout = new HorizontalLayout(
                 avatarItems,
-                productImage,
-                productsInfoLayout,
-                buttonPrimary,
-                buttonPrimary2
+                new Hr(), // Visuelle Trennung
+                productCard
         );
-        produktAuswahlLayout.setWidthFull();
-        produktAuswahlLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        mainContentLayout.setWidthFull();
+        mainContentLayout.setSpacing(true);
+        mainContentLayout.setAlignItems(FlexComponent.Alignment.START);
+        mainContentLayout.expand(avatarItems);
 
-        mainLayout.add(produktAuswahlLayout); // Auswahlbereich ins Hauptlayout einfügen
+        // Neues Layout setzen
+        mainLayout.removeAll();
+        mainLayout.setSpacing(false);
+        mainLayout.add(
+                layoutRow,
+                categoryTabs,
+                mainContentLayout
+        );
 
-        // Listener: Bei Produktauswahl Produktbild und Infos aktualisieren
+        // ---------- Event Listener ----------
+
+        // Produkt-Auswahl ändert Bild und Info
         avatarItems.addValueChangeListener(event -> {
             List<Products> selected = new ArrayList<>(event.getValue());
             if (!selected.isEmpty()) {
-                updateProductImageWithProductInfo(selected.get(0)); // Details anzeigen
+                updateProductImageWithProductInfo(selected.get(0));
             } else {
-                productImage.setSrc("path/to/default/image.png"); // Platzhalterbild
+                productImage.setSrc(new StreamResource(
+                        "default.png",
+                        () -> getClass().getResourceAsStream("/images/default.png")
+                ));
             }
         });
 
-        // Listener: Produkte zum Einkaufswagen hinzufügen
+        // Button: Produkte in Warenkorb
         buttonPrimary.addClickListener(event -> {
             List<Products> selected = new ArrayList<>(avatarItems.getSelectedItems());
             if (!selected.isEmpty()) {
                 for (Products p : selected) {
-                    warenkorbDAO.fuegeProduktHinzu(currentUser, p, 1);
+                    warenkorbController.getFuegeProduktHinzu(currentUser, p, 1);
                 }
-                updateEinkaufswagenFromDatabase(); // Einkaufswagen-UI aktualisieren
+                updateEinkaufswagenFromDatabase();
                 Notification.show("Produkte wurden zum Einkaufswagen hinzugefügt!");
-                avatarItems.clear(); // Auswahl zurücksetzen
+                avatarItems.clear();
             }
         });
 
-        // Listener: Produkte zur Merkliste hinzufügen
+        // Button: Produkte in Merkliste
         buttonPrimary2.addClickListener(event -> {
             List<Products> selected = new ArrayList<>(avatarItems.getSelectedItems());
             if (!selected.isEmpty()) {
                 for (Products p : selected) {
-                    wunschlisteDAO.fuegeProduktHinzu(currentUser, p);
+                    wunchlisteCntroller.getfuegeProduktHinzu(currentUser, p);
                 }
-                updateWunschlisteFromDatabase(); // Wunschliste aktualisieren
-                Notification.show("Zur Merkliste hinzugefügt.");
-                avatarItems.clear(); // Auswahl zurücksetzen
+                updateWunschlisteFromDatabase();
+                Notification.show("Produkte wurden zur Merkliste hinzugefügt!");
+                avatarItems.clear();
             }
         });
 
-        // --- 2. Tab-Bereich: Einkaufswagen, Merkliste, Bestellung, Kassa ---
+        // Zufälliges Produkt initial anzeigen
+        List<Products> randomProducts = productsController.getRandom(1);
+        if (!randomProducts.isEmpty()) {
+            updateProductImageWithProductInfo(randomProducts.get(0));
+        } else {
+            productImage.setSrc(new StreamResource(
+                    "default.png",
+                    () -> getClass().getResourceAsStream("/images/default.png")));
+        }
+
+        // Suchfeld: Filterung nach Kategorie + Suchbegriff
+        searchField.addValueChangeListener(event -> {
+            String searchTerm = event.getValue().trim().toLowerCase();
+            Tab selectedTab = categoryTabs.getSelectedTab();
+            Kategorie selectedKategorie = tabToCategory.get(selectedTab);
+
+            List<Products> filteredProducts;
+            if (selectedKategorie != null) {
+                filteredProducts = productsController.getByKategorie(selectedKategorie).stream()
+                        .filter(p -> p.getProductsName().toLowerCase().contains(searchTerm))
+                        .collect(Collectors.toList());
+            } else {
+                filteredProducts = productsController.getAlleAktiven().stream()
+                        .filter(p -> p.getProductsName().toLowerCase().contains(searchTerm))
+                        .collect(Collectors.toList());
+
+                if (selectedTab != searchTab) {
+                    categoryTabs.setSelectedTab(searchTab); // Automatisch in Such-Tab wechseln
+                }
+            }
+
+            setAvatarItemsSampleData(avatarItems, filteredProducts);
+            if (!filteredProducts.isEmpty()) {
+                updateProductImageWithProductInfo(filteredProducts.get(0));
+            } else {
+                productImage.setSrc("path/to/default/image.png");
+            }
+        });
+
+        // ---------- TabSheet: Weitere Benutzeraktionen ----------
         TabSheet tabSheet = new TabSheet();
         tabSheet.setWidthFull();
         tabSheet.setHeight("400px");
 
-        // Einzelne Tabs mit ihren zugehörigen Inhalten
         tabSheet.add("Einkaufswagen", createEinkaufswagenContent());
         tabSheet.add("Merkliste", createMerklisteContent());
         tabSheet.add("Bestellung", createBestellungContent());
         tabSheet.add("Kassa", createKassaContent());
+        tabSheet.add("Profil", createProfilContent());
 
-        mainLayout.add(tabSheet); // Tabs ans Hauptlayout anhängen
+        mainLayout.add(tabSheet);
 
-        // Initialer Zustand des Einkaufswagens laden
+        // Initialen Zustand des Einkaufswagens aus Datenbank laden
         updateEinkaufswagenFromDatabase();
     }
-
     /**
-     * Initialisiert eine ComboBox mit Kategorien aus der Datenbank und verknüpft eine Listener-Logik,
-     * die bei Auswahl einer Kategorie die zugehörigen Produkte lädt und darstellt.
+     * Initialisiert die Kategorietabs für die Benutzeroberfläche.
+     * Jeder Tab repräsentiert eine Produktkategorie oder die Suchfunktion.
+     * Beim Wechsel des Tabs wird die Produktliste (MultiSelectListBox) entsprechend aktualisiert.
      *
-     * @param comboBox Die ComboBox, die mit Kategorien befüllt werden soll.
+     * @param tabs das Tabs-Element, dem die Kategorietabs hinzugefügt werden
+     * @param avatarItems die Produktliste, die auf Basis des ausgewählten Tabs aktualisiert wird
      */
-    private void setComboBoxSampleData(ComboBox<Kategorie> comboBox) {
-        // Lade alle verfügbaren Kategorien aus der Datenbank
-        List<Kategorie> kategories = katDao.findAll();
+    private void setCategoryTabs(Tabs tabs, MultiSelectListBox<Products> avatarItems) {
+        // Zuordnung zwischen Tabs und Kategorien
+        Map<Tab, Kategorie> tabToCategory = new HashMap<>();
 
-        // Setze die Kategorien als Auswahlmöglichkeiten in die ComboBox
-        comboBox.setItems(kategories);
+        // Such-Tab erstellen (ohne zugeordnete Kategorie)
+        Tab searchTab = new Tab("🔍 Suche");
+        tabToCategory.put(searchTab, null);  // Such-Tab ist keiner Kategorie zugeordnet
+        tabs.add(searchTab);
 
-        // Bestimme, welcher Text (Label) für jede Kategorie angezeigt wird (hier: der Name)
-        comboBox.setItemLabelGenerator(Kategorie::getName);
+        // Kategorien aus der Datenbank laden und je einen Tab pro Kategorie erstellen
+        List<Kategorie> kategorien = kategorieController.getAll();
+        for (Kategorie kategorie : kategorien) {
+            Tab tab = new Tab(kategorie.getName());
+            tabToCategory.put(tab, kategorie);
+            tabs.add(tab);
+        }
 
-        // Listener: Reagiere auf Änderungen der Auswahl in der ComboBox
-        comboBox.addValueChangeListener(event -> {
-            Kategorie selectedCategory = event.getValue();  // Die aktuell ausgewählte Kategorie
+        // Listener: Reagiert auf Tabwechsel
+        tabs.addSelectedChangeListener(event -> {
+            Tab selectedTab = tabs.getSelectedTab();  // Aktuell ausgewählter Tab
+            Kategorie selectedKategorie = tabToCategory.get(selectedTab);  // Zugehörige Kategorie (kann null sein)
 
-            if (selectedCategory != null) {
-                // Lade alle Produkte, die zur ausgewählten Kategorie gehören
-                List<Products> products = dao.findByKategorie(selectedCategory);
-
-                // Aktualisiere die UI-Komponente mit den geladenen Produkten (z. B. Avatare, Produktliste)
+            if (selectedKategorie != null) {
+                // Produkte der ausgewählten Kategorie laden und anzeigen
+                List<Products> products = productsController.getAlleAktivenInKategorie(selectedKategorie);
+                setAvatarItemsSampleData(avatarItems, products);
+            } else if (selectedTab == searchTab) {
+                // Im Such-Tab: Alle aktiven Produkte anzeigen
+                List<Products> products = productsController.getAlleAktiven();
                 setAvatarItemsSampleData(avatarItems, products);
             }
         });
     }
 
+    /**
+     * Erzeugt das UI für die Benutzerprofilverwaltung.
+     * Beinhaltet Anzeige und Bearbeitung von Name, Adresse, E-Mail sowie Passwortänderung.
+     * Zudem ist ein Logout-Button integriert.
+     */
+    private Div createProfilContent() {
+        Div profilLayout = new Div(); // Hauptcontainer für das Profil
+        profilLayout.setWidthFull();
+
+        H3 title = new H3("Konto verwalten");
+
+        // Eingabefelder für Benutzerdaten
+        FormLayout formLayout = new FormLayout();
+        TextField nameField = new TextField("Vollständiger Name");
+        TextField addressField = new TextField("Adresse");
+        EmailField emailField = new EmailField("Email");
+        PasswordField altePasswortField = new PasswordField("Altes Passwort");
+        PasswordField passwordField = new PasswordField("Neues Passwort");
+        PasswordField passwordField1 = new PasswordField("Passwort bestätigen");
+
+        // Benutzerinformationen vorausfüllen (sofern eingeloggt)
+        if (currentUser != null) {
+            nameField.setValue(currentUser.getUser() != null ? currentUser.getUser() : "");
+            addressField.setValue(currentUser.getAdresse() != null ? currentUser.getAdresse() : "");
+            emailField.setValue(currentUser.getEmail() != null ? currentUser.getEmail() : "");
+        } else {
+            Notification.show("Kein gültiger Benutzer!", 3000, Notification.Position.MIDDLE);
+        }
+
+        formLayout.add(nameField, addressField, emailField, altePasswortField, passwordField, passwordField1);
+
+        // Speichern-Button: Validierung & Aktualisierung
+        Button saveButton = new Button("Aktualisieren", e -> {
+            boolean etwasGeaendert = false;
+
+            // Werte aus den Feldern auslesen
+            String name = nameField.getValue();
+            String adresse = addressField.getValue();
+            String email = emailField.getValue();
+            String altePasswort = altePasswortField.getValue();
+            String passwort = passwordField.getValue();
+            String passwort1 = passwordField1.getValue();
+
+            // Änderungen prüfen und übernehmen
+            if (!name.equals(currentUser.getUser())) {
+                currentUser.setUser(name);
+                etwasGeaendert = true;
+            }
+
+            if (!adresse.equals(currentUser.getAdresse())) {
+                currentUser.setAdresse(adresse);
+                etwasGeaendert = true;
+            }
+
+            if (!email.equals(currentUser.getEmail())) {
+                if (!InputUtils.isValidDateEmailInput(email)) {
+                    Notification.show("Ungültige E-Mail-Adresse!", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+                currentUser.setEmail(email);
+                etwasGeaendert = true;
+            }
+
+            // Passwortänderung nur, wenn eines der Felder befüllt ist
+            boolean willPasswortAendern =
+                    !altePasswort.isEmpty() ||
+                            !passwort.isEmpty() ||
+                            !passwort1.isEmpty();
+
+            long jetzt = System.currentTimeMillis();
+
+            if (willPasswortAendern) {
+
+                // Passwort-Sperrung bei wiederholten Fehlversuchen
+                if (jetzt < passwortSperreBis) {
+                    long sekunden = (passwortSperreBis - jetzt) / 1000;
+                    Notification.show("Zu viele Fehlversuche. Bitte versuche es in " + sekunden + " Sekunden erneut.", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+
+                if (altePasswort.isEmpty()) {
+                    Notification.show("Bitte altes Passwort eingeben.", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+
+                if (!altePasswort.equals(currentUser.getPassword())) {
+                    passwortVersuche++;
+
+                    if (passwortVersuche >= 3) {
+                        passwortSperreBis = jetzt + 3 * 60 * 1000; // 3 Minuten Sperre
+                        passwortVersuche = 0;
+                        Notification.show("Zu viele falsche Passwörter. Passwortänderung gesperrt für 3 Minuten.", 3000, Notification.Position.MIDDLE);
+                    } else {
+                        Notification.show("Falsches Passwort! Versuch " + passwortVersuche + " von 3.", 3000, Notification.Position.MIDDLE);
+                    }
+                    return;
+                }
+
+                // Passwortversuche zurücksetzen bei erfolgreicher Validierung
+                passwortVersuche = 0;
+
+                if (passwort.length() < 8) {
+                    Notification.show("Neues Passwort muss mindestens 8 Zeichen lang sein.", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+
+                if (!passwort.equals(passwort1)) {
+                    Notification.show("Neue Passwörter stimmen nicht überein.", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+
+                currentUser.setPassword(passwort);
+                etwasGeaendert = true;
+
+                // Felder leeren nach erfolgreicher Passwortänderung
+                altePasswortField.clear();
+                passwordField.clear();
+                passwordField1.clear();
+            }
+
+            // Änderungen speichern
+            if (etwasGeaendert) {
+                userController.update(currentUser);
+                Notification.show("Profil erfolgreich aktualisiert.", 3000, Notification.Position.MIDDLE);
+            } else {
+                Notification.show("Keine Änderungen vorgenommen.", 3000, Notification.Position.MIDDLE);
+            }
+        });
+
+        // Logout-Button zum Abmelden und Beenden der Session
+        Button logoutButton = new Button("Abmelden", VaadinIcon.SIGN_OUT.create());
+        logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+
+        logoutButton.addClickListener(e -> {
+            // Benutzer aus der Session entfernen
+            VaadinSession.getCurrent().setAttribute(User.class, null);
+
+            // Zurück zur Startseite navigieren
+            UI.getCurrent().navigate("");
+
+            // Session leicht verzögert beenden (sicherstellen, dass Navigation abgeschlossen ist)
+            UI ui = UI.getCurrent();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(500); // kleine Verzögerung
+                } catch (InterruptedException ignored) {}
+
+                ui.access(() -> VaadinSession.getCurrent().close());
+            }).start();
+        });
+
+        // Komponenten hinzufügen
+        profilLayout.add(title, formLayout, saveButton, logoutButton);
+
+        return profilLayout;
+    }
     /**
      * Erstellt und konfiguriert die UI-Komponente zur Anzeige und Verwaltung der Merkliste (Wunschliste).
      *
@@ -286,7 +591,7 @@ public class HomeView extends Composite<VerticalLayout> {
             // Wenn ein Produktbild vorhanden ist, verwende es – andernfalls Standardbild
             if (p.getImage() != null && p.getImage().length > 0) {
                 StreamResource res = new StreamResource(
-                        p.getProductsName() + ".jpg",
+                        sanitizeFileName(p.getProductsName()) + ".jpg",
                         () -> new ByteArrayInputStream(p.getImage())
                 );
                 img.setSrc(res);
@@ -328,7 +633,7 @@ public class HomeView extends Composite<VerticalLayout> {
 
             // Entferne jedes ausgewählte Produkt aus der Datenbank-Wunschliste des aktuellen Nutzers
             for (Products p : selectedProducts) {
-                wunschlisteDAO.productsEntfernen(currentUser, p);
+                wunchlisteCntroller.getproductsEntfernen(currentUser, p);
             }
 
             // Aktualisiere die lokale Wunschliste und UI-Ansicht
@@ -363,8 +668,21 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // Button zum Löschen aller Produkte aus dem Einkaufswagen
         Button clearCartButton = new Button("Löschen", event -> {
-            einkaufswagen.clear();          // Lokale Produktliste leeren
-            updateEinkaufswagenView();      // UI aktualisieren, um den leeren Zustand anzuzeigen
+            // Lokalen Einkaufswagen leeren
+            einkaufswagen.clear();
+
+            // Warenkorb aus DB holen
+            Warenkorb warenkorb = warenkorbController.getWarenkorbVonUser(currentUser);
+
+            if (warenkorb != null) {
+                warenkorb.getProdukteMitMenge().clear();     // Produkte entfernen
+                warenkorb.setGesamtPreis(0);
+                warenkorb.setVersandPreis(0);
+                warenkorbController.update(warenkorb);              // In DB speichern
+            }
+
+            updateEinkaufswagenView(); // UI aktualisieren
+            Notification.show("Warenkorb wurde geleert.");
         });
 
         // Button zur Navigation zur Kasse / Checkout-Prozess
@@ -391,28 +709,37 @@ public class HomeView extends Composite<VerticalLayout> {
     }
 
     /**
-     * Synchronisiert die lokale Einkaufswagenansicht mit dem aktuellen Warenkorb des Nutzers aus der Datenbank.
-     * Dabei wird die lokale Produktliste zurückgesetzt und das UI-Layout für die Anzeige aktualisiert.
+     * Synchronisiert die lokale Einkaufswagenansicht mit den aktuellen Daten des Benutzers aus der Datenbank.
+     * <p>
+     * Die Methode aktualisiert sowohl die interne Datenstruktur {@code einkaufswagen} als auch das visuelle Layout
+     * ({@code einkaufswagenLayout}), sodass Änderungen im Warenkorb (z. B. Mengenanpassungen) sofort sichtbar werden.
+     * </p>
+     *
+     * <ul>
+     *   <li>Lädt den aktuellen {@link Warenkorb} des eingeloggten Benutzers.</li>
+     *   <li>Erzeugt für jedes Produkt eine Zeile mit Bild, Informationen und Mengensteuerung.</li>
+     *   <li>Bietet Buttons (+/-) zur Mengenänderung, die den Warenkorb in der Datenbank synchronisieren.</li>
+     *   <li>Zeigt eine Meldung an, falls der Warenkorb leer ist.</li>
+     * </ul>
      */
     private void updateEinkaufswagenFromDatabase() {
-        // Leere die lokale Produktliste und das UI-Layout, um veraltete Einträge zu entfernen
+        // Lokale Liste und Layout leeren, um mit einer frischen Ansicht zu starten
         einkaufswagen.clear();
         einkaufswagenLayout.removeAll();
 
-        // Lade den Warenkorb des angemeldeten Nutzers aus der Datenbank
-        Warenkorb warenkorb = warenkorbDAO.findeWarenkorbVonUser(currentUser);
+        // Warenkorb für aktuellen Benutzer laden
+        Warenkorb warenkorb = warenkorbController.getWarenkorbVonUser(currentUser);
 
-        // Prüfe, ob der Warenkorb existiert und Produkte enthält
         if (warenkorb != null && !warenkorb.getProdukteMitMenge().isEmpty()) {
-            // Iteriere über alle Produkte inklusive ihrer jeweiligen Menge
+            // Für jedes Produkt im Warenkorb eine UI-Zeile erzeugen
             for (Map.Entry<Products, Integer> entry : warenkorb.getProdukteMitMenge().entrySet()) {
                 Products produkt = entry.getKey();
                 int menge = entry.getValue();
 
-                // Ergänze das Produkt in die lokale Einkaufswagen-Datenstruktur
+                // Produkt in lokale Liste aufnehmen
                 einkaufswagen.add(produkt);
 
-                // Erzeuge eine visuelle Produktzeile im Einkaufswagen-Layout
+                // --- Layout für ein Produkt ---
                 HorizontalLayout produktZeile = new HorizontalLayout();
                 produktZeile.setAlignItems(FlexComponent.Alignment.CENTER);
                 produktZeile.setSpacing(true);
@@ -420,57 +747,104 @@ public class HomeView extends Composite<VerticalLayout> {
                 produktZeile.getStyle().set("border-bottom", "1px solid #ccc");
                 produktZeile.setWidthFull();
 
-                // Erstelle ein Bild-Element und setze die Quelle abhängig von Verfügbarkeit des Produktbildes
+                // --- Produktbild ---
                 Image produktBild = new Image();
                 produktBild.setWidth("100px");
                 produktBild.setHeight("100px");
+
                 if (produkt.getImage() != null && produkt.getImage().length > 0) {
+                    // Falls Bild vorhanden: als StreamResource darstellen
                     StreamResource bildResource = new StreamResource(
-                            produkt.getProductsName() + ".jfif",
+                            produkt.getProductsName().replaceAll("[^a-zA-Z0-9\\.\\-_]", "_") + ".jfif",
                             () -> new ByteArrayInputStream(produkt.getImage())
                     );
                     produktBild.setSrc(bildResource);
                 } else {
-                    // Fallback auf Standardbild, wenn kein Produktbild verfügbar ist
+                    // Platzhalterbild anzeigen
                     produktBild.setSrc("images/default-product.jpg");
                 }
 
-                // Erstelle ein vertikales Layout zur Anzeige von Produktinformationen (Name, Einzelpreis, Gesamtpreis)
+                // --- Produktinformationen ---
                 VerticalLayout produktInfo = new VerticalLayout();
                 produktInfo.setPadding(false);
                 produktInfo.setSpacing(false);
-                produktInfo.setWidthFull();
+                produktInfo.setWidth("200px");
 
-                // Produktname und Menge (z.B. "Apfel x 3"), prominent hervorgehoben
-                Paragraph name = new Paragraph(produkt.getProductsName() + " x " + menge);
+                Paragraph name = new Paragraph(produkt.getProductsName());
                 name.getStyle().set("font-weight", "bold").set("margin", "0");
 
-                // Einzelpreis des Produkts
                 Paragraph einzelpreis = new Paragraph("Einzelpreis: " + produkt.getPreis() + " €");
                 einzelpreis.getStyle().set("margin", "0");
 
-                // Gesamtpreis (Einzelpreis * Menge), optisch dezent gestaltet
-                Paragraph gesamtpreis = new Paragraph("Gesamt: " + (produkt.getPreis() * menge) + " €");
+                Paragraph gesamtpreis = new Paragraph("Gesamt: " +String.format ("%.2f",produkt.getPreis() * menge) + " €");
                 gesamtpreis.getStyle().set("margin", "0").set("color", "gray");
 
-                // Füge alle Produktinformationen dem Layout hinzu
                 produktInfo.add(name, einzelpreis, gesamtpreis);
 
-                // Füge Bild und Produktinformationen nebeneinander in die Produktzeile ein
-                produktZeile.add(produktBild, produktInfo);
+                // --- Mengensteuerung ---
+                TextField mengeField = new TextField();
+                mengeField.setValue(String.valueOf(menge));
+                mengeField.setWidth("50px");
+                mengeField.setReadOnly(true); // Menge nur über Buttons veränderbar
+                mengeField.getStyle().set("text-align", "center");
 
-                // Ergänze die Produktzeile in das übergeordnete Einkaufswagen-Layout
+                // Button: Menge reduzieren
+                Button minusButton = new Button("-", click -> {
+                    int aktuelleMenge = Integer.parseInt(mengeField.getValue());
+                    if (aktuelleMenge > 1) {
+                        int neueMenge = aktuelleMenge - 1;
+                        mengeField.setValue(String.valueOf(neueMenge));
+
+                        // Warenkorb-Daten anpassen
+                        warenkorb.getProdukteMitMenge().put(produkt, neueMenge);
+                        warenkorb.setGesamtPreis(warenkorbController.berechneGesamtpreis(warenkorb.getProdukteMitMenge()));
+
+                        // Warenkorb in DB aktualisieren
+                        warenkorbController.update(warenkorb);
+
+                        // Ansicht neu laden
+                        updateEinkaufswagenFromDatabase();
+                    }
+                });
+                minusButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+
+                // Button: Menge erhöhen
+                Button plusButton = new Button("+", click -> {
+                    int aktuelleMenge = Integer.parseInt(mengeField.getValue());
+                    int neueMenge = aktuelleMenge + 1;
+                    mengeField.setValue(String.valueOf(neueMenge));
+
+                    // Warenkorb-Daten anpassen
+                    warenkorb.getProdukteMitMenge().put(produkt, neueMenge);
+                    warenkorb.setGesamtPreis(warenkorbController.berechneGesamtpreis(warenkorb.getProdukteMitMenge()));
+
+                    // Warenkorb in DB aktualisieren
+                    warenkorbController.update(warenkorb);
+
+                    // Ansicht neu laden
+                    updateEinkaufswagenFromDatabase();
+                });
+                plusButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+
+                // Steuerung in einer Zeile darstellen
+                HorizontalLayout mengeSteuerung = new HorizontalLayout(minusButton, mengeField, plusButton);
+                mengeSteuerung.setAlignItems(FlexComponent.Alignment.CENTER);
+
+                // Produktzeile zusammensetzen
+                produktZeile.add(produktBild, produktInfo, mengeSteuerung);
+
+                // Zeile ins Hauptlayout einfügen
                 einkaufswagenLayout.add(produktZeile);
             }
         } else {
-            // Falls keine Produkte vorhanden sind, zeige eine entsprechende Platzhalter-Nachricht an
+            // Wenn Warenkorb leer ist
             einkaufswagenLayout.add(new Text("Warenkorb ist leer."));
         }
     }
     /**
      * Lädt die Wunschliste des aktuellen Benutzers aus der Datenbank
      * und aktualisiert die lokale Datenstruktur sowie die Darstellung in der UI.
-     *
+     * <p>
      * Die Methode leert zunächst die lokale Liste {@code merkliste},
      * lädt anschließend die gespeicherten Produkte aus der Datenbank
      * (falls vorhanden), und aktualisiert dann die Darstellungskomponente
@@ -481,7 +855,7 @@ public class HomeView extends Composite<VerticalLayout> {
         merkliste.clear();
 
         // Holt die Wunschliste des aktuellen Benutzers aus der Datenbank
-        Wunschliste wunschliste = wunschlisteDAO.findeWunschlisteVonUser(currentUser);
+        Wunschliste wunschliste = wunchlisteCntroller.getWunschlisteVonUser(currentUser);
 
         // Falls eine Wunschliste existiert und Produkte enthält, übernehme diese in die lokale Liste
         if (wunschliste != null && !wunschliste.getProducts().isEmpty()) {
@@ -496,7 +870,7 @@ public class HomeView extends Composite<VerticalLayout> {
 
     /**
      * Aktualisiert die visuelle Darstellung des Einkaufswagens.
-     *
+     * <p>
      * Diese Methode leert zuerst das bestehende Layout des Einkaufswagens
      * und fügt anschließend für jedes Produkt im Einkaufswagen eine neue Zeile mit dem Produktnamen und -preis hinzu.
      */
@@ -514,7 +888,7 @@ public class HomeView extends Composite<VerticalLayout> {
 
     /**
      * Erstellt das Layout für die Bestellübersicht des Benutzers.
-     *
+     * <p>
      * Diese Methode initialisiert das Bestell-Layout, ruft die aktuelle Bestellübersicht des
      * eingeloggten Benutzers ab und fügt das Layout dem zurückgegebenen Container hinzu.
      *
@@ -553,7 +927,7 @@ public class HomeView extends Composite<VerticalLayout> {
         }
 
         // Ruft die Liste aller Bestellungen des aktuellen Benutzers ab
-        List<Bestellung> bestellungs = bestellungDAO.findeBestellungenVonUser(currentUser);
+        List<Bestellung> bestellungs = bstellungController.getBestellungenVonUser(currentUser);
 
         // Wenn keine Bestellungen vorhanden sind, wird eine entsprechende Nachricht angezeigt
         if (bestellungs.isEmpty()) {
@@ -590,7 +964,7 @@ public class HomeView extends Composite<VerticalLayout> {
                 if (p.getImage() != null && p.getImage().length > 0) {
                     // Wenn ein Produktbild vorhanden ist, wird es als StreamResource eingebunden
                     StreamResource res = new StreamResource(
-                            p.getProductsName() + ".jfif",
+                            sanitizeFileName(p.getProductsName()) + ".jpg",
                             () -> new ByteArrayInputStream(p.getImage()));
                     img.setSrc(res);
                 } else {
@@ -610,49 +984,60 @@ public class HomeView extends Composite<VerticalLayout> {
                 Paragraph preis = new Paragraph("Einzelpreis: " + p.getPreis() + " €");
                 preis.getStyle().set("margin", "0");
 
-                Paragraph gesamt = new Paragraph("Gesamt: " + (p.getPreis() * menge) + " €");
+                Paragraph gesamt = new Paragraph("Gesamt: " + String.format("%.2f", p.getPreis() * menge) + " €");
                 gesamt.getStyle().set("margin", "0").set("color", "gray");
 
                 info.add(name, preis, gesamt);
                 productsZeile.add(img, info); // Fügt Bild und Infos zur Produktzeile hinzu
 
-                // Bewertungs-Layout (z. B. 1–5 Sterne)
-                HorizontalLayout bewertungLayout = erzeugeSterneBewertung(wert -> {
-                    Bewertung bewertung = new Bewertung();
-                    bewertung.setUser(currentUser);
-                    bewertung.setProducts(p);
-                    bewertung.setRating("★".repeat(wert));
-                    bewertungDAO.save(bewertung);
-                    Notification.show("Bewertung gespeichert!");
+                // Layout zur Darstellung der Bewertungselemente (horizontal)
+                HorizontalLayout bewertungLayout = new HorizontalLayout();
+                bewertungLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+// Speicher für den ausgewählten Bewertungswert (1–5 Sterne)
+                final int[] ausgewaehlteSterne = {0};
+
+// Sternebewertung erzeugen und Wert merken
+                HorizontalLayout sterne = erzeugeSterneBewertung(wert -> {
+                    ausgewaehlteSterne[0] = wert;
                 });
 
-                // Kommentarfeld für optionale Textbewertung
+// Kommentarfeld
                 TextField commentField = new TextField();
                 commentField.setPlaceholder("Kommentar...");
                 commentField.setWidth("200px");
 
-                // Button zum Absenden der Bewertung
-                Button bewertenBtn = new Button("Speichern");
-                bewertenBtn.addClickListener(event -> {
+// Button zum Absenden der Bewertung
+                Button speichernBtn = new Button("Speichern");
+                speichernBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+                speichernBtn.addClickListener(event -> {
+                    if (ausgewaehlteSterne[0] == 0) {
+                        Notification.show("Bitte wähle eine Bewertung (Sterne) aus.");
+                        return;
+                    }
+
                     Bewertung bewertung = new Bewertung();
                     bewertung.setUser(currentUser);
                     bewertung.setProducts(p);
+                    bewertung.setRating("★".repeat(ausgewaehlteSterne[0]));
                     bewertung.setComment(commentField.getValue());
-                    bewertungDAO.save(bewertung);
+
+                    bewertungController.create(bewertung);
                     Notification.show("Bewertung gespeichert!");
                 });
 
-                // Füge Bewertungskomponenten zur Bewertungsspalte hinzu
-                bewertungLayout.add(commentField, bewertenBtn);
+// Baue das komplette Layout zusammen
+                bewertungLayout.add(sterne, commentField, speichernBtn);
 
-                // Produktzeile und Bewertungszeile zur Bestellung hinzufügen
+// Produktzeile und Bewertungszeile zur Bestellung hinzufügen
                 bestellungBox.add(productsZeile, bewertungLayout);
             }
 
             // Metainformationen zur Bestellung anzeigen
             bestellungBox.add(new Paragraph("Datum: " + b.getBestelldatum()));
             bestellungBox.add(new Paragraph("Versand: " + (b.isVersand() ? "Erfolgreich" : "Offen")));
-            bestellungBox.add(new Paragraph("Gesamtpreis: " + b.getPreis() + " €"));
+            bestellungBox.add(new Paragraph("Gesamtpreis: " + String.format("%.2f", b.getPreis()) + " €"));
             bestellungBox.add(new Hr());
 
             // Trennlinie zwischen den Bestellungen
@@ -694,38 +1079,60 @@ public class HomeView extends Composite<VerticalLayout> {
     }
 
     /**
-     * Bereitet die Kassenansicht (Checkout) vor.
-     * Zeigt alle Produkte aus dem Einkaufswagen mit Einzelpreisen und berechnet den Gesamtpreis.
-     * Falls der Einkaufswagen leer ist, wird ein entsprechender Hinweis angezeigt.
+     * Bereitet die Kassenansicht (Checkout) visuell vor.
+     *
+     * <p>Diese Methode holt den aktuellen Warenkorb des eingeloggten Benutzers
+     * und zeigt alle enthaltenen Produkte mit Mengenangabe, Einzelpreis und
+     * Zwischensumme an. Am Ende wird der Gesamtpreis aller Produkte berechnet
+     * und dargestellt.</p>
+     *
+     * <p>Falls der Warenkorb leer ist oder kein Warenkorb existiert, wird
+     * stattdessen ein Hinweis angezeigt.</p>
      */
     private void prepareCheckoutView() {
-        // Vorherigen Inhalt des Layouts leeren
+        // Vorherigen Inhalt der Kassenansicht entfernen
         kassaLayout.removeAll();
 
-        // Falls der Einkaufswagen leer ist, zeige eine entsprechende Nachricht
-        if (einkaufswagen.isEmpty()) {
+        // Warenkorb des aktuellen Benutzers abrufen
+        Warenkorb warenkorb = warenkorbController.getWarenkorbVonUser(currentUser);
+
+        // Falls kein Warenkorb oder keine Produkte vorhanden sind → Hinweis anzeigen
+        if (warenkorb == null || warenkorb.getProdukteMitMenge().isEmpty()) {
             kassaLayout.add(new Text("Keine Produkte im Einkaufswagen."));
-            return; // Wichtig: Danach keine weitere Verarbeitung nötig
+            return;
         }
 
         double gesamtpreis = 0.0;
 
-        // Durchlaufe alle Produkte im Einkaufswagen
-        for (Products p : einkaufswagen) {
-            // Zeige den Produktnamen und Preis
-            kassaLayout.add(new Text(p.getProductsName() + " - " + p.getPreis() + " €"));
+        // Alle Produkte mit Menge und Preis durchlaufen
+        for (Map.Entry<Products, Integer> entry : warenkorb.getProdukteMitMenge().entrySet()) {
+            Products produkt = entry.getKey();
+            int menge = entry.getValue();
+            double produktSumme = produkt.getPreis() * menge;
 
-            // Preis zum Gesamtpreis addieren
-            gesamtpreis += p.getPreis();
+            // Formatierte Anzeige für Produkt, Menge, Gesamtpreis und Einzelpreis
+            String info = String.format(
+                    "%s x%d - %.2f € (%.2f €/Stück)",
+                    produkt.getProductsName(),
+                    menge,
+                    produktSumme,
+                    produkt.getPreis()
+            );
 
-            // Trennlinie zwischen den Produkten
+            // Informationen in die Ansicht einfügen
+            kassaLayout.add(new Text(info));
+
+            // Trenner zur besseren Übersicht
             kassaLayout.add(new Hr());
+
+            // Gesamtsumme aufaddieren
+            gesamtpreis += produktSumme;
         }
 
-        // Gesamtpreis am Ende anzeigen
-        kassaLayout.add(new Text("Gesamtpreis: " + gesamtpreis + " €"));
+        // Endgültigen Gesamtpreis anzeigen
+        String formatted = String.format("%.2f", gesamtpreis);
+        kassaLayout.add(new Text("Gesamtpreis: " + formatted + " €"));
     }
-
     /**
      * Fügt eine Liste von Produkten dem Warenkorb des aktuellen Benutzers hinzu.
      * Prüft zunächst, ob Produkte vorhanden sind und ein Benutzer eingeloggt ist.
@@ -739,7 +1146,7 @@ public class HomeView extends Composite<VerticalLayout> {
 
             // Jedes Produkt wird mit Menge 1 dem Warenkorb hinzugefügt
             for (Products p : products) {
-                warenkorbDAO.fuegeProduktHinzu(currentUser, p, 1);
+                warenkorbController.getFuegeProduktHinzu(currentUser, p, 1);
             }
 
             // Lokalen Einkaufswagen aus der Datenbank neu laden
@@ -766,14 +1173,14 @@ public class HomeView extends Composite<VerticalLayout> {
         }
 
         // Warenkorb des aktuellen Benutzers abrufen
-        Warenkorb warenkorb = warenkorbDAO.findeWarenkorbVonUser(currentUser);
+        Warenkorb warenkorb = warenkorbController.getWarenkorbVonUser(currentUser);
         if (warenkorb == null || warenkorb.getProdukteMitMenge().isEmpty()) {
             Notification.show("Der Einkaufswagen ist leer.");
             return;
         }
 
         // Bestellung auf Basis des Warenkorbs erstellen und speichern
-        Bestellung bestellung = bestellungDAO.erstelleBestellung(
+        Bestellung bestellung = bstellungController.erstelleBestellung(
                 currentUser,
                 warenkorb.getProdukteMitMenge(),
                 true // Bezahlstatus: true = bezahlt
@@ -783,7 +1190,7 @@ public class HomeView extends Composite<VerticalLayout> {
         bestellverlauf.add(new ArrayList<>(warenkorb.getProdukteMitMenge().keySet()));
 
         // Warenkorb leeren (Datenbank und UI)
-        warenkorbDAO.leereWarenkorb(currentUser);
+        warenkorbController.getleereWarenkorb(currentUser);
         einkaufswagen.clear();
         // Produkte im Warenkorb durchgehen und Bestand reduzieren
         for (Map.Entry<Products, Integer> eintrag : warenkorb.getProdukteMitMenge().entrySet()) {
@@ -793,7 +1200,8 @@ public class HomeView extends Composite<VerticalLayout> {
 
             if (aktuelleMenge >= gekaufteMenge) {
                 produkt.setBestand(aktuelleMenge - gekaufteMenge);
-                dao.update(produkt); // Bestand in der DB aktualisieren
+                productsController.update(
+                        produkt); // Bestand in der DB aktualisieren
             } else {
                 Notification.show("Nicht genug Bestand für: " + produkt.getProductsName());
             }
@@ -809,7 +1217,7 @@ public class HomeView extends Composite<VerticalLayout> {
         Notification.show("Bezahlung abgeschlossen. Bestellung gespeichert!");
 
         // Zahlung in der Datenbank speichern
-        zahlungDAO.speichereZahlung( bestellung.getPreis(), bestellung);
+        zahlungController.getSpeichereZahlung(bestellung.getPreis(), bestellung);
     }
 
     /**
@@ -818,7 +1226,7 @@ public class HomeView extends Composite<VerticalLayout> {
      */
     private void zeigeZahlungHistory() {
         // Lade alle Zahlungen des aktuellen Benutzers (über dessen Warenkorb)
-        List<Zahlung> zahlungs = zahlungDAO.findeZahlungenVonUser(currentUser);
+        List<Zahlung> zahlungs = zahlungController.getZahlungenVonUser(currentUser);
 
         // Vorherige Inhalte des Layouts entfernen
         kassaLayout.removeAll();
@@ -853,7 +1261,7 @@ public class HomeView extends Composite<VerticalLayout> {
                 detailsLayout.add(
                         new Paragraph("Rechnungsnummer: " + selected.getRechnungsnummer()),
                         new Paragraph("Zahlungsdatum: " + selected.getZahlungDatum()),
-                        new Paragraph("Gesamtbetrag: " + selected.getBetrag() + " €")
+                        new Paragraph("Gesamtbetrag: " + String.format("%.2f", selected.getBetrag()) + " €")
                 );
 
                 // Gekaufte Produkte anzeigen (falls vorhanden)
@@ -887,7 +1295,7 @@ public class HomeView extends Composite<VerticalLayout> {
      * Jedes Produkt wird mit Bild, Name, Preis und Sternebewertung angezeigt.
      *
      * @param multiSelectListBox Die MultiSelectListBox, in die die Produkte geladen werden sollen.
-     * @param products            Die Liste der darzustellenden Produkte.
+     * @param products           Die Liste der darzustellenden Produkte.
      */
     private void setAvatarItemsSampleData(MultiSelectListBox<Products> multiSelectListBox, List<Products> products) {
 
@@ -908,15 +1316,15 @@ public class HomeView extends Composite<VerticalLayout> {
             try {
                 if (item.getImage() != null && item.getImage().length > 10) {
                     StreamResource resource = new StreamResource(
-                            item.getProductsName() + ".jpg",
+                            sanitizeFileName(item.getProductsName()) + ".jpg",
                             () -> new ByteArrayInputStream(item.getImage())
                     );
                     image = new Image(resource, "Produktbild");
                 } else {
-                    image = new Image("images/standard.png", "Kein Bild");
+                    image = new Image("/images/standard.png", "Kein Bild");
                 }
             } catch (Exception e) {
-                image = new Image("images/standard.png", "Fehler beim Laden");
+                image = new Image("/images/standard.png", "Fehler beim Laden");
             }
 
             // Setze Bildgröße (optisch ansprechend)
@@ -924,7 +1332,7 @@ public class HomeView extends Composite<VerticalLayout> {
             image.setHeight("70px");
 
             // Lade alle Bewertungen zum aktuellen Produkt
-            List<Bewertung> bewertungen = bewertungDAO.findeBewertungenZuProdukt(item);
+            List<Bewertung> bewertungen = bewertungController.getBewertungenZuProdukt(item);
 
             // Durchschnitt berechnen: Anzahl der Sterne basiert auf der Länge des Rating-Strings (z. B. "★★★")
             double avgRating = bewertungen.stream()
@@ -976,16 +1384,26 @@ public class HomeView extends Composite<VerticalLayout> {
         System.out.println("Aktualisiere Bild mit Produkt: " + product.getProductsName());
 
         // Bild setzen: Wenn Produktbild vorhanden ist, als StreamResource anzeigen
-        if (product.getImage() != null && product.getImage().length > 0) {
+        if (product.getImage() != null && product.getImage().length > 10) {
+            String safeFileName = sanitizeFileName(product.getProductsName()) + ".jfif";
             StreamResource resource = new StreamResource(
-                    product.getProductsName() + ".jfif",
+                    safeFileName,
                     () -> new ByteArrayInputStream(product.getImage())
             );
             productImage.setSrc(resource);
         } else {
             // Wenn kein Bild vorhanden ist, Platzhalterbild verwenden
-            productImage.setSrc("path/to/default/image.png");
+            productImage.setSrc("images/default-product.jpg"); // Pfad ggf. anpassen
         }
+
+        // HIER: feste Größe immer setzen, damit Layout stabil bleibt
+        productImage.setWidth("160px");
+        productImage.setHeight("200px");
+        productImage.getStyle()
+                .set("max-width", "160px")
+                .set("max-height", "200px")
+                .set("object-fit", "contain")
+                .set("border", "1px solid lightgray"); // Nur zur visuellen Kontrolle
 
         // Neues vertikales Layout zur Darstellung der Produktinformationen
         VerticalLayout infoLayout = new VerticalLayout();
@@ -999,7 +1417,7 @@ public class HomeView extends Composite<VerticalLayout> {
         infoLayout.add(new Paragraph("Verfügbar auf Lager: " + product.getBestand()));
 
         // Alle Bewertungen zum Produkt aus der Datenbank abrufen
-        List<Bewertung> bewertungen = bewertungDAO.findeBewertungenZuProdukt(product);
+        List<Bewertung> bewertungen = bewertungController.getBewertungenZuProdukt(product);
 
         // Durchschnittliche Bewertung auf Basis der Länge des Rating-Strings berechnen
         double avgRating = bewertungen.stream()
@@ -1033,7 +1451,7 @@ public class HomeView extends Composite<VerticalLayout> {
     /**
      * Erzeugt eine interaktive horizontale Sternebewertung (1–5 Sterne).
      * Jeder Stern ist klickbar und ruft einen Callback mit dem gewählten Wert (1–5) auf.
-     *
+     * <p>
      * Die Darstellung zeigt standardmäßig leere Sterne (☆). Nach Auswahl eines Sterns
      * werden alle Sterne bis zu diesem Index gefüllt dargestellt (★).
      *
@@ -1084,6 +1502,12 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // Rückgabe des fertigen Layouts mit klickbaren Sternen
         return sternLayout;
+    }
+
+    private String sanitizeFileName(String name) {
+        return Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "")
+                .replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
     }
 }
 

@@ -26,6 +26,9 @@ module InnoShop {
     requires vaadin.renderer.flow;
     requires flow.data;
     requires vaadin.upload.flow;
+    requires vaadin.icons.flow;
+    requires org.checkerframework.checker.qual;
+    requires vaadin.radio.button.flow;
     opens org.commercetron.beans to org.hibernate.orm.core; // <-- Hier öffnen
     exports org.commercetron.cli;
     exports org.commercetron.dao;

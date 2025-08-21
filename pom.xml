@@ -1,48 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Maven-Projektkonfiguration für das Webprojekt "InnoShop"
+    Verwendet Vaadin 24, JPA (Hibernate), Jetty und PostgreSQL.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- Projektmetadaten -->
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.example</groupId>
     <artifactId>InnoShop</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>My Application</name>
-    <packaging>war</packaging>
+    <packaging>war</packaging> <!-- WAR für Webanwendungen -->
 
+    <!-- Globale Projekteigenschaften -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <failOnMissingWebXml>false</failOnMissingWebXml>
-        <vaadin.version>24.7.6</vaadin.version>
+        <failOnMissingWebXml>false</failOnMissingWebXml> <!-- Ermöglicht modernes WebApp-Deployment ohne web.xml -->
+        <vaadin.version>24.7.6</vaadin.version> <!-- Aktuelle Vaadin-Version -->
     </properties>
 
+    <!-- Verwendung des Vaadin-BOMs für konsistente Versionierung -->
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-                <version>${vaadin.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
+    <!-- Projektabhängigkeiten -->
     <dependencies>
-        <!-- Vaadin UI Framework -->
+        <!-- Vaadin Framework (UI-Komponenten, Routing, usw.) -->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
         </dependency>
 
-        <!-- Logging -->
+        <!-- SLF4J Logging-Implementierung -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
         </dependency>
 
-        <!-- Servlet API (Jetty 11 supports Jakarta Servlet 5) -->
+        <!-- Servlet-API (bereitgestellt durch Jetty zur Laufzeit) -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
@@ -50,7 +59,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- Lombok für Boilerplate-Reduktion -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -58,56 +67,60 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- PostgreSQL JDBC Driver -->
+        <!-- PostgreSQL JDBC-Treiber -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.4</version>
         </dependency>
 
-        <!-- JPA / Hibernate -->
+        <!-- JPA API -->
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
             <version>3.2.0</version>
         </dependency>
 
+        <!-- Hibernate als JPA-Implementierung -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>6.6.13.Final</version>
         </dependency>
 
-        <!-- Bean Validation API -->
+        <!-- Bean Validation (z. B. für Formularvalidierung) -->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
             <version>3.0.2</version>
         </dependency>
 
+        <!-- Hilfsbibliothek für Base64- und Hashfunktionen -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+    </dependencies>
 
-    <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.15</version>
-    </dependency>
-</dependencies>
-
-
+    <!-- Build-Konfiguration -->
     <build>
-        <defaultGoal>jetty:run</defaultGoal>
+        <defaultGoal>jetty:run</defaultGoal> <!-- Standardziel beim Start von Maven -->
+
         <plugins>
+            <!-- Jetty Webserver für lokale Entwicklung -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>11.0.21</version>
                 <configuration>
                     <httpConnector>
-                        <port>9090</port>
+                        <port>9090</port> <!-- Lokaler Entwicklungsport -->
                     </httpConnector>
                 </configuration>
             </plugin>
 
+            <!-- Vaadin Plugin zur Frontend-Kompilierung -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-maven-plugin</artifactId>
@@ -115,12 +128,13 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-frontend</goal>
+                            <goal>prepare-frontend</goal> <!-- Führt die nötige Frontend-Vorbereitung aus -->
                         </goals>
                     </execution>
                 </executions>
             </plugin>
 
+            <!-- WAR-Packaging -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -129,6 +143,7 @@
         </plugins>
     </build>
 
+    <!-- Profil für Produktions-Builds -->
     <profiles>
         <profile>
             <id>production</id>
@@ -136,6 +151,7 @@
                 <dependency>
                     <groupId>com.vaadin</groupId>
                     <artifactId>vaadin-core</artifactId>
+                    <!-- Entfernt Entwicklungsabhängigkeiten -->
                     <exclusions>
                         <exclusion>
                             <groupId>com.vaadin</groupId>
@@ -153,7 +169,7 @@
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>build-frontend</goal>
+                                    <goal>build-frontend</goal> <!-- Produktionsoptimierter Frontend-Build -->
                                 </goals>
                                 <phase>compile</phase>
                             </execution>

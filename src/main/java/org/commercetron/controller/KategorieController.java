@@ -4,6 +4,7 @@ import org.commercetron.beans.Kategorie;
 import org.commercetron.dao.KategorieDAO;
 import org.commercetron.interfase.DaoInterface;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +25,6 @@ public class KategorieController extends BaseController {
         } catch (RuntimeException e){
             System.out.println(e.getMessage());
         }
-        return null;
+        return Collections.emptyList();
     }
 }
