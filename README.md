@@ -135,7 +135,7 @@ Anwendung mit Maven/Gradle bauen
 
 Server starten (z. B. Tomcat)
 
-Zugriff über Browser (http://localhost:8080/innoshop)
+Zugriff über Browser (http://localhost:9090/innoshop)
 
 🔹 Ausblick
 
