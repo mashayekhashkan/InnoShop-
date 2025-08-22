@@ -47,7 +47,9 @@ Erweiterung um echte Zahlungs- und Versand-APIs
 
 Recommendation-System für Produkte
 
-Mobile App-Version🔹 Hauptfunktionen
+Mobile App-Version
+
+🔹 Hauptfunktionen
 
 Nutzerregistrierung & Login
 
@@ -95,7 +97,9 @@ Erweiterung um echte Zahlungs- und Versand-APIs
 
 Recommendation-System für Produkte
 
-Mobile App-Version🔹 Hauptfunktionen
+Mobile App-Version
+
+🔹 Hauptfunktionen
 
 Nutzerregistrierung & Login
 
