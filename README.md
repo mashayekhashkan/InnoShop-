@@ -1,16 +1,146 @@
-# Project Base for a Vaadin application
+README
+🔹 Hauptfunktionen
 
-This project can be used as a starting point to create your own Vaadin application.
-It has the necessary dependencies and files to help you get started.
-It requires Java 8 or newer and node.js 10.16 or newer.
+Nutzerregistrierung & Login
 
-To run the project, run `mvn jetty:run` and open [http://localhost:8080](http://localhost:8080) in browser.
+Produktsuche und -filterung
 
-To update to the latest available Vaadin release, issue `mvn 
-versions:update-properties`
+Warenkorb & Wunschliste
 
-Some useful links:
-- [Feature overview](https://vaadin.com/flow)
-- [Documentation](https://vaadin.com/docs/flow/Overview.html)
-- [Tutorials](https://vaadin.com/tutorials?q=tag:Flow) 
-- [Component Java integrations and examples](https://vaadin.com/components)
+Bestellungen & Bestellhistorie
+
+Bewertungsfunktion
+
+Admin-Panel (Produkte & Nutzer verwalten)
+
+🔹 Architektur & Technologien
+
+Frontend: Java mit Vaadin
+
+Backend: Java, JPA/Hibernate
+
+Datenbank: PostgreSQL
+
+Architektur: Client-Server-Modell
+
+🔹 Projektstatus
+
+Der Zahlungs- und Versandprozess wird aktuell simuliert.
+
+Externe Dienste (z. B. Zahlungsanbieter, Versanddienstleister) sind als Erweiterungsmöglichkeit vorgesehen.
+
+🔹 Installation & Start
+
+Repository klonen
+
+Datenbank (PostgreSQL) einrichten
+
+Anwendung mit Maven/Gradle bauen
+
+Server starten (z. B. Tomcat)
+
+Zugriff über Browser (http://localhost:9090/innoshop)
+
+🔹 Ausblick
+
+Erweiterung um echte Zahlungs- und Versand-APIs
+
+Recommendation-System für Produkte
+
+Mobile App-Version🔹 Hauptfunktionen
+
+Nutzerregistrierung & Login
+
+Produktsuche und -filterung
+
+Warenkorb & Wunschliste
+
+Bestellungen & Bestellhistorie
+
+Bewertungsfunktion
+
+Admin-Panel (Produkte & Nutzer verwalten)
+
+🔹 Architektur & Technologien
+
+Frontend: Java mit Vaadin
+
+Backend: Java, JPA/Hibernate
+
+Datenbank: PostgreSQL
+
+Architektur: Client-Server-Modell
+
+🔹 Projektstatus
+
+Der Zahlungs- und Versandprozess wird aktuell simuliert.
+
+Externe Dienste (z. B. Zahlungsanbieter, Versanddienstleister) sind als Erweiterungsmöglichkeit vorgesehen.
+
+🔹 Installation & Start
+
+Repository klonen
+
+Datenbank (PostgreSQL) einrichten
+
+Anwendung mit Maven/Gradle bauen
+
+Server starten (z. B. Tomcat)
+
+Zugriff über Browser (http://localhost:8080/innoshop)
+
+🔹 Ausblick
+
+Erweiterung um echte Zahlungs- und Versand-APIs
+
+Recommendation-System für Produkte
+
+Mobile App-Version🔹 Hauptfunktionen
+
+Nutzerregistrierung & Login
+
+Produktsuche und -filterung
+
+Warenkorb & Wunschliste
+
+Bestellungen & Bestellhistorie
+
+Bewertungsfunktion
+
+Admin-Panel (Produkte & Nutzer verwalten)
+
+🔹 Architektur & Technologien
+
+Frontend: Java mit Vaadin
+
+Backend: Java, JPA/Hibernate
+
+Datenbank: PostgreSQL
+
+Architektur: Client-Server-Modell
+
+🔹 Projektstatus
+
+Der Zahlungs- und Versandprozess wird aktuell simuliert.
+
+Externe Dienste (z. B. Zahlungsanbieter, Versanddienstleister) sind als Erweiterungsmöglichkeit vorgesehen.
+
+🔹 Installation & Start
+
+Repository klonen
+
+Datenbank (PostgreSQL) einrichten
+
+Anwendung mit Maven/Gradle bauen
+
+Server starten (z. B. Tomcat)
+
+Zugriff über Browser (http://localhost:8080/innoshop)
+
+🔹 Ausblick
+
+Erweiterung um echte Zahlungs- und Versand-APIs
+
+Recommendation-System für Produkte
+
+Mobile App-Versionhttps://vaadin.com/components)
