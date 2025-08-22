@@ -29,7 +29,8 @@ public class ProductsDAO extends BaseDAO<Products, UUID> {
     public List<Products> getRandomProducts(int count) {
         EntityManager em = getEntityManager();
         try {
-            String sql = "SELECT p FROM Products p ORDER BY function('RANDOM')";
+
+            String sql = "SELECT p FROM Products p WHERE p.aktiv = true ORDER BY function('RANDOM')";
             return em.createQuery(sql, Products.class)
                     .setMaxResults(count)
                     .getResultList();

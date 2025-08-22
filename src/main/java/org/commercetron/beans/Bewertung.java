@@ -122,17 +122,14 @@ public class Bewertung {
      */
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Bewertung bewertung = (Bewertung) o;
-        return Objects.equals(bewertungId, bewertung.bewertungId)
-                && Objects.equals(user, bewertung.user)
-                && Objects.equals(products, bewertung.products)
-                && Objects.equals(rating, bewertung.rating)
-                && Objects.equals(comment, bewertung.comment);
+        if (this == o) return true;
+        if (!(o instanceof Bewertung)) return false;
+        Bewertung other = (Bewertung) o;
+        return bewertungId != null && bewertungId.equals(other.bewertungId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bewertungId, user, products, rating, comment);
+        return Objects.hash(bewertungId);
     }
 }

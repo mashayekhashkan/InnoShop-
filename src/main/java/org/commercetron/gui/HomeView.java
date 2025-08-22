@@ -994,20 +994,20 @@ public class HomeView extends Composite<VerticalLayout> {
                 HorizontalLayout bewertungLayout = new HorizontalLayout();
                 bewertungLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
-// Speicher für den ausgewählten Bewertungswert (1–5 Sterne)
+                // Speicher für den ausgewählten Bewertungswert (1–5 Sterne)
                 final int[] ausgewaehlteSterne = {0};
 
-// Sternebewertung erzeugen und Wert merken
+                // Sternebewertung erzeugen und Wert merken
                 HorizontalLayout sterne = erzeugeSterneBewertung(wert -> {
                     ausgewaehlteSterne[0] = wert;
                 });
 
-// Kommentarfeld
+                // Kommentarfeld
                 TextField commentField = new TextField();
                 commentField.setPlaceholder("Kommentar...");
                 commentField.setWidth("200px");
 
-// Button zum Absenden der Bewertung
+                // Button zum Absenden der Bewertung
                 Button speichernBtn = new Button("Speichern");
                 speichernBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -1027,10 +1027,10 @@ public class HomeView extends Composite<VerticalLayout> {
                     Notification.show("Bewertung gespeichert!");
                 });
 
-// Baue das komplette Layout zusammen
+                // Baue das komplette Layout zusammen
                 bewertungLayout.add(sterne, commentField, speichernBtn);
 
-// Produktzeile und Bewertungszeile zur Bestellung hinzufügen
+                // Produktzeile und Bewertungszeile zur Bestellung hinzufügen
                 bestellungBox.add(productsZeile, bewertungLayout);
             }
 
@@ -1380,8 +1380,6 @@ public class HomeView extends Composite<VerticalLayout> {
      * @param product Das ausgewählte Produkt, dessen Details angezeigt werden sollen.
      */
     private void updateProductImageWithProductInfo(Products product) {
-        // Konsolenausgabe zur Fehleranalyse (kann später entfernt werden)
-        System.out.println("Aktualisiere Bild mit Produkt: " + product.getProductsName());
 
         // Bild setzen: Wenn Produktbild vorhanden ist, als StreamResource anzeigen
         if (product.getImage() != null && product.getImage().length > 10) {

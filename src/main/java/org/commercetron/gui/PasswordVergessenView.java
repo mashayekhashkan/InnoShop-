@@ -101,9 +101,8 @@ public class PasswordVergessenView extends Composite<VerticalLayout> {
                 Notification.show("Bitte E-Mail-Adresse eingeben.", 3000, Notification.Position.MIDDLE);
                 return;
             }
-
             // Prüfung: Format der E-Mail-Adresse
-            if (!InputUtils.isValidDateEmailInput(email)){
+            if (!email.contains("@")) {
                 Notification.show("Bitte gültige E-Mail-Adresse eingeben.", 3000, Notification.Position.MIDDLE);
                 return;
             }

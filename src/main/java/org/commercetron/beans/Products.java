@@ -186,24 +186,15 @@ public class Products {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Products products = (Products) o;
-        return bestand == products.bestand
-                && Double.compare(preis, products.preis) == 0
-                && aktiv == products.aktiv
-                && Objects.equals(productsId, products.productsId)
-                && Objects.equals(productsName, products.productsName)
-                && Objects.equals(kategorie, products.kategorie)
-                && Objects.equals(status, products.status)
-                && Objects.deepEquals(image, products.image)
-                && Objects.equals(bewertungen, products.bewertungen);
+        if (this == o) return true;
+        if (!(o instanceof Products)) return false;
+        Products other = (Products) o;
+        return productsId != null && productsId.equals(other.productsId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                productsId, productsName, kategorie, bestand,
-                status, preis, aktiv, Arrays.hashCode(image), bewertungen
-        );
+        return Objects.hashCode(productsId);
     }
+
 }

@@ -1,5 +1,4 @@
-README
-
+📘 InnoShop – README
 🔹 Hauptfunktionen
 
 Nutzerregistrierung & Login
@@ -22,7 +21,7 @@ Backend: Java, JPA/Hibernate
 
 Datenbank: PostgreSQL
 
-Architektur: Client-Server-Modell
+Architektur: Klassisches Client-Server-Modell (MVC)
 
 🔹 Projektstatus
 
@@ -31,21 +30,51 @@ Der Zahlungs- und Versandprozess wird aktuell simuliert.
 Externe Dienste (z. B. Zahlungsanbieter, Versanddienstleister) sind als Erweiterungsmöglichkeit vorgesehen.
 
 🔹 Installation & Start
+1. Repository klonen
+   git clone https://github.com/mashayekhashkan/InnoShop-
 
-Repository klonen
+2. Datenbank einrichten
 
-Datenbank (PostgreSQL) einrichten
+PostgreSQL starten.
 
-Anwendung mit Maven/Gradle bauen
+Neue Datenbank anlegen:
 
-Server starten (z. B. Tomcat)
+CREATE DATABASE innoshop;
 
-Zugriff über Browser (http://localhost:9090/innoshop)
+Benutzer anlegen (falls nicht vorhanden):
+
+3. Konfiguration
+
+Die Verbindungseinstellungen befinden sich in
+src/main/resources/application.properties:
+
+4. Projekt starten
+
+Projekt in IntelliJ IDEA öffnen (pom.xml als Maven-Projekt importieren).
+
+Maven-Dependencies herunterladen lassen.
+
+Anwendung starten mit:
+
+mvn jetty:run
+
+oder über eine IntelliJ-Run-Konfiguration.
+
+👉 Die Anwendung ist anschließend erreichbar unter:
+http://localhost:9090
+
+🔹 Login
+
+Benutzername: admin
+
+Passwort: admin
+
+Normale Benutzer können sich über das Registrierungsformular im UI selbst anlegen.
 
 🔹 Ausblick
 
-Erweiterung um echte Zahlungs- und Versand-APIs
+Integration echter Zahlungs- und Versand-APIs
 
 Recommendation-System für Produkte
 
-Mobile App-Version
+Mobile App-Version (z. B. Flutter oder React Native)

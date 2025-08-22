@@ -111,13 +111,14 @@ public class Warenkorb {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Warenkorb warenkorb = (Warenkorb) o;
-        return Double.compare(versandPreis, warenkorb.versandPreis) == 0 && Double.compare(gesamtPreis, warenkorb.gesamtPreis) == 0 && Objects.equals(warenkorbId, warenkorb.warenkorbId) && Objects.equals(user, warenkorb.user) && Objects.equals(produkteMitMenge, warenkorb.produkteMitMenge);
+        if (this == o) return true;
+        if (!(o instanceof Warenkorb)) return false;
+        Warenkorb other = (Warenkorb) o;
+        return warenkorbId != null && warenkorbId.equals(other.warenkorbId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(warenkorbId, user, produkteMitMenge, versandPreis, gesamtPreis);
+        return Objects.hash(warenkorbId);
     }
 }
