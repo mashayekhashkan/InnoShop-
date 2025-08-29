@@ -1,13 +1,16 @@
 package org.commercetron.gui;
 
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -15,170 +18,158 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.theme.lumo.LumoUtility;
-import com.vaadin.pro.licensechecker.Product;
-import org.commercetron.beans.User;
+import org.commercetron.beans.Products;
 import org.commercetron.controller.ProductsController;
 import org.commercetron.dao.ProductsDAO;
-import org.commercetron.beans.Products;
-import org.commercetron.dao.UserDAO;
 
 import java.util.Base64;
 import java.util.List;
 
-
-// Setzt den Seitentitel im Browser-Tab (hier leer → kein Titel)
-@PageTitle("")
-// Route für diese View – leere Route bedeutet: Startseite der Anwendung
+@PageTitle("InnoShop")
 @Route("")
-// Erlaubt den Zugriff ohne vorherige Authentifizierung
 @AnonymousAllowed
 public class WelcomeView extends Composite<VerticalLayout> {
 
-    // DAO zur Datenbeschaffung von Produktinformationen
-    private final ProductsDAO dao;
     private final ProductsController controller;
 
-    // Konstruktor
     public WelcomeView() {
-        this.dao = new ProductsDAO();// Initialisierung des Datenzugriffsobjekts
+        ProductsDAO dao = new ProductsDAO();
         this.controller = new ProductsController(dao);
-        initLayout();                 // Aufbau des UI-Layouts
+        initLayout();
     }
 
-    /**
-     * Initialisiert das gesamte Layout der Startseite (Welcome Page).
-     * Beinhaltet Kopfzeile, Navigation, Produktübersicht und versteckten Admin-Link.
-     */
     private void initLayout() {
-        // ---------- Kopfzeile mit Überschrift ----------
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        H1 h1 = new H1("Welcome to InnoShop"); // Hauptüberschrift der Seite
-        layoutRow.add(h1);
-        layoutRow.setWidth("100%");
-        layoutRow.setHeight("150px");
-        layoutRow.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        layoutRow.setAlignItems(FlexComponent.Alignment.END);
+        VerticalLayout root = getContent();
+        root.removeAll();
+        root.setWidthFull();
+        root.setPadding(false);
+        root.setSpacing(false);
+        root.addClassName("shop-page");
 
-        // ---------- Buttons für Anmelden und Registrieren ----------
-        Button buttonLogin = new Button("Anmelden");
-        Button buttonRegister = new Button("Registrieren");
-        buttonLogin.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonRegister.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        Button loginButton = new Button("Anmelden");
+        Button registerButton = new Button("Konto erstellen");
+        loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST);
+        loginButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("anmelden")));
+        registerButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("registrieren")));
 
-        // Layout für die Buttons (zentriert)
-        HorizontalLayout buttonRow = new HorizontalLayout(buttonLogin, buttonRegister);
-        buttonRow.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        buttonRow.setWidthFull();
-        buttonRow.getStyle().set("margin-bottom", "20px");
+        Div copy = new Div();
+        copy.addClassName("hero-copy");
+        copy.add(
+                new H1("InnoShop"),
+                new Paragraph("Entdecke ausgewaehlte Produkte, lege Favoriten an und kaufe mit einem klaren, modernen Shopping-Erlebnis ein.")
+        );
 
-        // Navigation beim Klick auf Buttons
-        buttonLogin.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("anmelden")));
-        buttonRegister.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("registrieren")));
+        HorizontalLayout actions = new HorizontalLayout(loginButton, registerButton);
+        actions.addClassName("hero-actions");
+        copy.add(actions);
 
-        // ---------- Anzeige zufälliger Produkte ----------
-        Div productGrid = new Div(); // Container für Produktkarten
-        productGrid.getStyle()
-                .set("display", "flex")
-                .set("flex-wrap", "wrap")
-                .set("gap", "30px")
-                .set("justify-content", "center")
-                .set("padding", "60px");
+        VerticalLayout heroPanel = new VerticalLayout();
+        heroPanel.addClassName("hero-panel");
+        heroPanel.setPadding(false);
+        heroPanel.setSpacing(true);
+        heroPanel.setAlignItems(FlexComponent.Alignment.STRETCH);
 
-        // Vier zufällige Produkte abrufen und anzeigen
+        Span kicker = new Span("SHOPPING PLATFORM");
+        kicker.addClassName("section-kicker");
+        heroPanel.add(kicker, new H2("Alles fuer deinen naechsten Einkauf."));
+
+        HorizontalLayout stats = new HorizontalLayout(
+                createHeroStat("4+", "Produktbereiche"),
+                createHeroStat("24/7", "Online verfuegbar")
+        );
+        stats.setWidthFull();
+        stats.setFlexGrow(1, stats.getComponentAt(0), stats.getComponentAt(1));
+        heroPanel.add(stats, new Paragraph("Schneller Zugriff auf Warenkorb, Merkliste, Bestellungen und Profil nach dem Login."));
+
+        Div hero = new Div(copy, heroPanel);
+        hero.addClassName("welcome-hero");
+
+        Div sectionHeader = new Div();
+        sectionHeader.addClassName("shop-shell");
+        Span sectionKicker = new Span("Auswahl");
+        sectionKicker.addClassName("section-kicker");
+        H2 sectionTitle = new H2("Beliebte Produkte");
+        sectionTitle.addClassName("section-title");
+        sectionHeader.add(sectionKicker, sectionTitle);
+
+        Div productGrid = new Div();
+        productGrid.addClassName("product-grid");
+
         List<Products> randomProducts = controller.getRandom(4);
         for (Products product : randomProducts) {
-            Div productCard = new Div(); // Einzelne Produktkarte
-            productCard.getStyle()
-                    .set("width", "250px")
-                    .set("border", "1px solid #e0e0e0")
-                    .set("border-radius", "24px")
-                    .set("box-shadow", "0 4px 10px rgba(0,0,0,0.05)")
-                    .set("overflow", "hidden")
-                    .set("background-color", "white")
-                    .set("display", "flex")
-                    .set("flex-direction", "column")
-                    .set("align-items", "center")
-                    .set("transition", "transform 0.2s, box-shadow 0.2s");
-
-            // Hover-Effekt für die Karte
-            productCard.getElement().addEventListener("mouseover", e ->
-                    productCard.getStyle()
-                            .set("box-shadow", "0 6px 15px rgba(0,0,0,0.1)")
-                            .set("transform", "scale(1.03)")
-            );
-            productCard.getElement().addEventListener("mouseout", e ->
-                    productCard.getStyle()
-                            .set("box-shadow", "0 4px 10px rgba(0,0,0,0.05)")
-                            .set("transform", "scale(1)")
-            );
-
-            // Produktbild als Base64 (aus Byte-Array)
-            byte[] imageByte = product.getImage();
-            String base64Image = Base64.getEncoder().encodeToString(imageByte);
-            Image image = new Image("data:image/jpg;base64," + base64Image, "Produktbild");
-            image.setWidth("100%");
-            image.setHeight("150px");
-            image.getStyle()
-                    .set("object-fit", "cover")
-                    .set("border-bottom", "1px solid #eee");
-
-            // Produktname anzeigen
-            H4 name = new H4(product.getProductsName());
-            name.getStyle()
-                    .set("font-size", "1.1em")
-                    .set("margin", "10px 8px 0 8px")
-                    .set("text-align", "center")
-                    .set("white-space", "normal")
-                    .set("overflow", "hidden");
-
-            // Preis des Produkts anzeigen
-            H4 preis = new H4(product.getPreis() + " €");
-            preis.getStyle()
-                    .set("font-size", "1em")
-                    .set("color", "gray")
-                    .set("margin", "5px 0 12px 0");
-
-            // Kauf-Button → leitet zum Login weiter (für Gäste)
-            Button buyButton = new Button("In den Einkaufwagen");
-            buyButton.getStyle()
-                    .set("margin-bottom", "10px")
-                    .set("background-color", "#1976d2")
-                    .set("color", "white")
-                    .set("border-radius", "6px");
-
-            // Klick: Produkt-ID zwischenspeichern und zum Login navigieren
-            buyButton.addClickListener(e -> {
-                VaadinSession.getCurrent().setAttribute("pendingProductId", product.getProductsId());
-                getUI().ifPresent(ui -> ui.navigate("anmelden"));
-            });
-
-            // Produktkarte zusammensetzen
-            productCard.add(image, name, preis, buyButton);
-            productGrid.add(productCard);
+            productGrid.add(createProductCard(product));
         }
 
-//        // ---------- Versteckter Admin-Login-Button ----------
-//        Button adminButton = new Button(".");
-//        adminButton.getStyle()
-//                .set("background", "transparent")
-//                .set("color", "transparent")
-//                .set("border", "none")
-//                .set("font-size", "8px")
-//                .set("padding", "0")
-//                .set("position", "absolute")
-//                .set("bottom", "5px")
-//                .set("left", "5px");
-//
-//        // Klick auf Admin-Button → Weiterleitung zur Admin-Login-Seite
-//        adminButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("adminLoginView")));
+        root.add(createHeader(), hero, sectionHeader, productGrid);
+    }
 
-        // ---------- Zusammensetzen der gesamten Seite ----------
-        getContent().setWidth("100%");
-        getContent().add(layoutRow, buttonRow, productGrid);
+    private HorizontalLayout createHeader() {
+        Div mark = new Div(VaadinIcon.CART.create());
+        mark.addClassName("brand-mark");
+
+        Div brandText = new Div();
+        H4 title = new H4("InnoShop");
+        title.addClassName("brand-title");
+        Span subtitle = new Span("Modern einkaufen");
+        subtitle.addClassName("brand-subtitle");
+        brandText.add(title, subtitle);
+
+        HorizontalLayout inner = new HorizontalLayout(mark, brandText);
+        inner.addClassName("shop-header-inner");
+        inner.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        HorizontalLayout header = new HorizontalLayout(inner);
+        header.addClassName("shop-header");
+        header.setWidthFull();
+        header.setPadding(false);
+        header.setSpacing(false);
+        return header;
+    }
+
+    private Div createHeroStat(String value, String label) {
+        Div stat = new Div();
+        stat.addClassName("hero-stat");
+        Span valueLabel = new Span(value);
+        valueLabel.addClassName("stat-value");
+        stat.add(valueLabel, new Span(label));
+        return stat;
+    }
+
+    private Div createProductCard(Products product) {
+        Div productCard = new Div();
+        productCard.addClassName("product-card");
+
+        Image image = createProductImage(product);
+
+        H4 name = new H4(product.getProductsName());
+        Span price = new Span(String.format("%.2f EUR", product.getPreis()));
+        price.addClassName("product-price");
+
+        Button buyButton = new Button("In den Einkaufswagen");
+        buyButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        buyButton.setWidthFull();
+        buyButton.addClickListener(e -> {
+            VaadinSession.getCurrent().setAttribute("pendingProductId", product.getProductsId());
+            getUI().ifPresent(ui -> ui.navigate("anmelden"));
+        });
+
+        VerticalLayout body = new VerticalLayout(name, price, buyButton);
+        body.addClassName("product-card-body");
+        body.setPadding(false);
+        body.setSpacing(true);
+        body.setAlignItems(FlexComponent.Alignment.STRETCH);
+
+        productCard.add(image, body);
+        return productCard;
+    }
+
+    private Image createProductImage(Products product) {
+        byte[] imageByte = product.getImage();
+        if (imageByte != null && imageByte.length > 10) {
+            String base64Image = Base64.getEncoder().encodeToString(imageByte);
+            return new Image("data:image/jpg;base64," + base64Image, "Produktbild");
+        }
+        return new Image("/images/standard.png", "Kein Produktbild");
     }
 }
-
-
-
-
