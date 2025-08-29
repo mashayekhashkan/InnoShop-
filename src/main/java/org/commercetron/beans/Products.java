@@ -196,5 +196,4 @@ public class Products {
     public int hashCode() {
         return Objects.hashCode(productsId);
     }
-
 }

@@ -1348,7 +1348,7 @@ public class HomeView extends Composite<VerticalLayout> {
             }
 
             // UI-Komponente für die Sterneanzeige
-            Span sterneSpan = new Span("⭑ " + sterne);
+            Span sterneSpan = new Span(" " + sterne);
             sterneSpan.getStyle()
                     .set("font-size", "20px")
                     .set("color", "#FFD700"); // Goldfarbe

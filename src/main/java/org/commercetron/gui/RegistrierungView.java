@@ -99,8 +99,14 @@ public class RegistrierungView extends Composite<VerticalLayout> {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setWidthFull();
 
-        // Abbrechen-Button mit Navigation zur Anmeldeseite
-        Button cancelButton = new Button("Abbrechen", e -> getUI().ifPresent(ui -> ui.navigate("anmeldung")));
+        // Abbrechen-Button
+        Button cancelButton = new Button("Abbrechen", e -> {
+            nameField.clear();
+            addressField.clear();
+            birthDateField.clear();
+            passwordField.clear();
+            emailField.clear();
+        });
         cancelButton.setWidthFull();
 
         // Logik für das Speichern der Registrierung

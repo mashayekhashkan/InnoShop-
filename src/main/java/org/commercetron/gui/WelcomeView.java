@@ -158,24 +158,24 @@ public class WelcomeView extends Composite<VerticalLayout> {
             productGrid.add(productCard);
         }
 
-        // ---------- Versteckter Admin-Login-Button ----------
-        Button adminButton = new Button(".");
-        adminButton.getStyle()
-                .set("background", "transparent")
-                .set("color", "transparent")
-                .set("border", "none")
-                .set("font-size", "8px")
-                .set("padding", "0")
-                .set("position", "absolute")
-                .set("bottom", "5px")
-                .set("left", "5px");
-
-        // Klick auf Admin-Button → Weiterleitung zur Admin-Login-Seite
-        adminButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("adminLoginView")));
+//        // ---------- Versteckter Admin-Login-Button ----------
+//        Button adminButton = new Button(".");
+//        adminButton.getStyle()
+//                .set("background", "transparent")
+//                .set("color", "transparent")
+//                .set("border", "none")
+//                .set("font-size", "8px")
+//                .set("padding", "0")
+//                .set("position", "absolute")
+//                .set("bottom", "5px")
+//                .set("left", "5px");
+//
+//        // Klick auf Admin-Button → Weiterleitung zur Admin-Login-Seite
+//        adminButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("adminLoginView")));
 
         // ---------- Zusammensetzen der gesamten Seite ----------
         getContent().setWidth("100%");
-        getContent().add(layoutRow, buttonRow, productGrid, adminButton);
+        getContent().add(layoutRow, buttonRow, productGrid);
     }
 }
 
