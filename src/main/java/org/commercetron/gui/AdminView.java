@@ -92,7 +92,6 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         this.kategorieController = new KategorieController(katDAO);
         this.productsDAO = new ProductsDAO();
         this.productsController = new ProductsController(productsDAO);
-        initLayout();
         this.currentAdmin = (Admin) VaadinSession.getCurrent().getAttribute(Admin.class);
     }
 
@@ -106,9 +105,7 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         if (admin == null) {
             event.forwardTo("anmelden"); // keine Session → weiter zur Login-Seite
         } else {
-            // Session erneuern, um Probleme mit abgelaufenen Sessions zu vermeiden
-            VaadinSession.getCurrent().close();
-            VaadinSession.getCurrent().setAttribute(Admin.class, admin);
+            this.currentAdmin = admin;
             initLayout();
         }
     }
@@ -119,10 +116,16 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
      * Struktur bleibt unverändert – Kommentare erläutern Zweck und mögliche Stolpersteine.
      */
     public void initLayout() {
+        getContent().removeAll();
+        getContent().setWidthFull();
+        getContent().setPadding(false);
+        getContent().setAlignItems(Alignment.CENTER);
+
         // Haupt-Container des Views (zentriert, max. 850px Breite)
         VerticalLayout layout = new VerticalLayout();
+        layout.addClassName("admin-shell");
         layout.setWidth("100%");
-        layout.setMaxWidth("850px");
+        layout.setMaxWidth("1180px");
         layout.setAlignItems(Alignment.CENTER);
 
         // Begrüßungs-Header
@@ -148,6 +151,7 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
 
         // Tab-Steuerung für Kategorien und Produkte
         TabSheet tabSheet = new TabSheet();
+        tabSheet.addClassName("admin-tabs");
         tabSheet.setHeightFull();
         tabSheet.add("Kategorie Verwalten", katLayout);
         tabSheet.add("Produkte Verwalten", productsLayout);
@@ -166,6 +170,10 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         Button speichernButton1 = new Button("Kategorie speichern", event -> {
             String katName = neueKategorieField.getValue();
             if (katName != null && !katName.trim().isEmpty()) {
+                if (katDAO.existsByName(katName)) {
+                    Notification.show("Diese Kategorie existiert bereits.");
+                    return;
+                }
                 Kategorie neuekategorie = new Kategorie();
                 neuekategorie.setName(katName.trim());
                 kategorieController.create(neuekategorie);
@@ -178,12 +186,40 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         });
         speichernButton1.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
+        Button entfernenButton1 = new Button("Kategorie entfernen", event -> {
+            Kategorie selectedKategorie = kategorieComboBox.getValue();
+            if (selectedKategorie == null) {
+                Notification.show("Bitte zuerst eine Kategorie auswahlen.");
+                return;
+            }
+
+            int productCount = productsDAO.findeAlleAktivenInKategorie(selectedKategorie).size()
+                    + productsDAO.findeAlleDeaktivenInKategorie(selectedKategorie).size();
+            if (productCount > 0) {
+                Notification.show("Kategorie kann nicht entfernt werden, weil noch " + productCount + " Produkt(e) zugeordnet sind.");
+                return;
+            }
+
+            boolean deleted = kategorieController.delete(selectedKategorie);
+            if (deleted) {
+                Notification.show("Kategorie entfernt.");
+                kategorieComboBox.clear();
+                aktualisiereKategorieComboBox(kategorieComboBox);
+            } else {
+                Notification.show("Kategorie konnte nicht entfernt werden.");
+            }
+        });
+        entfernenButton1.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
         // Button-Gruppe mit optischem Abstand
-        HorizontalLayout kategorieButtons = new HorizontalLayout(speichernButton1, abbrechenButton1);
+        HorizontalLayout kategorieButtons = new HorizontalLayout(speichernButton1, entfernenButton1, abbrechenButton1);
+        kategorieButtons.addClassName("admin-action-row");
         kategorieButtons.getStyle().set("gap", "10px");
 
         // Eingabebereich (Feld + Buttons) für neue Kategorie
         HorizontalLayout katInput = new HorizontalLayout(neueKategorieField, kategorieButtons);
+        katInput.addClassName("admin-category-row");
+        katInput.setWidthFull();
         katInput.setAlignItems(Alignment.END);
 
         // Kategorie-Block zusammenbauen
@@ -210,9 +246,9 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
 
         // Layout für den Statusfilter (positioniert leicht nach rechts)
         VerticalLayout radioLayout = new VerticalLayout();
+        radioLayout.addClassName("admin-filter-row");
         radioLayout.setSpacing(true);
         radioLayout.setWidthFull();
-        radioLayout.getStyle().set("margin-left", "110px");
         radioLayout.add(statusFilter);
 
         // Produktauswahl (bestehende Produkte)
@@ -290,18 +326,24 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         // Button: Produkt bearbeiten (überschreibt Felder des selektierten Produkts)
         Button editButton = new Button("Produkt bearbeiten", event -> {
             try {
-                // Hinweis: Wenn keine Datei hochgeladen wurde, kann readAllBytes() hier 0 Bytes liefern.
-                byte[] imageBytes = buffer.getInputStream().readAllBytes();
-
                 Products selected = productsComboBox.getValue();
+                if (selected == null) {
+                    Notification.show("Bitte Produkt auswahlen");
+                    return;
+                }
+
                 selected.setProductsName(produktnameField.getValue());
                 selected.setStatus(statusField.getValue());
                 selected.setPreis(Double.parseDouble(preisField.getValue()));
                 selected.setBestand(Integer.parseInt(mengeField.getValue()));
-                selected.setImage(imageBytes);
+                if (buffer.getFileData() != null) {
+                    byte[] imageBytes = buffer.getInputStream().readAllBytes();
+                    selected.setImage(imageBytes);
+                }
 
                 productsController.update(selected);
                 Notification.show("Produkt bearbeitet");
+                aktualisiereProductsComboBox(productsComboBox);
                 clearProductFields(produktnameField, statusField, preisField, mengeField, uploadInfo, kategorieComboBox, productsComboBox);
             } catch (IOException | NumberFormatException e) {
                 Notification.show("Fehler beim Bearbeiten: " + e.getMessage());
@@ -386,6 +428,23 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
             }
         });
 
+        statusFilter.addValueChangeListener(event -> {
+            Kategorie selectedKategorie = kategorieComboBox.getValue();
+            Boolean nurAktive = event.getValue();
+            if (selectedKategorie != null) {
+                List<Products> gefilterteProdukte = nurAktive
+                        ? productsDAO.findeAlleAktivenInKategorie(selectedKategorie)
+                        : productsDAO.findeAlleDeaktivenInKategorie(selectedKategorie);
+                productsComboBox.clear();
+                productsComboBox.setItems(gefilterteProdukte);
+            } else if (Boolean.TRUE.equals(nurAktive)) {
+                aktualisiereProductsComboBox(productsComboBox);
+            } else {
+                productsComboBox.clear();
+                productsComboBox.setItems(productsController.getAlleDeaktiven());
+            }
+        });
+
         // Feldbreiten auf volle Breite setzen
         produktnameField.setWidthFull();
         statusField.setWidthFull();
@@ -404,7 +463,12 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
 
         // Felder in Layout
         FormLayout feldLayout = new FormLayout();
+        feldLayout.addClassName("admin-form");
         feldLayout.setWidth("100%");
+        feldLayout.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("700px", 2)
+        );
         feldLayout.addFormItem(kategorieComboBox, "");
         feldLayout.addFormItem(productsComboBox, "");
         feldLayout.addFormItem(produktnameField, "");
@@ -414,13 +478,14 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
 
         // Bild- und Uploadbereich rechts
         produktBild.setWidth("100%");
-        produktBild.setHeight("300px"); // Oder mehr je nach Wunsch
+        produktBild.setHeight("260px"); // Oder mehr je nach Wunsch
         produktBild.getStyle().set("object-fit", "contain").set("border-radius", "6px");
 
         upload.setWidthFull();
 
         // Kombinierter Bereich: Bildvorschau + Upload + Info
         VerticalLayout bildUploadLayout = new VerticalLayout(produktBild, upload, uploadInfo);
+        bildUploadLayout.addClassName("admin-upload-panel");
         bildUploadLayout.setWidth("100%");
         bildUploadLayout.setSpacing(true);
         bildUploadLayout.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -445,15 +510,14 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
 
         // Separates Layout nur mit dem Upload (wird zusätzlich unten eingefügt)
         // Hinweis: Dieser zusätzliche Upload-Container ergänzt den oben definierten Upload-Bereich.
-        HorizontalLayout bildUploadLayout1 = new HorizontalLayout(upload);
-        bildUploadLayout1.getStyle().set("margin-left", "270px");
-        bildUploadLayout1.setJustifyContentMode(JustifyContentMode.CENTER);
 
         // Button-Leiste für Produktaktionen (Speichern/Bearbeiten/Aktivieren/Deaktivieren/Logout)
         HorizontalLayout produktButtons = new HorizontalLayout(speichernButton, editButton, inkativButton, ativButton, logoutButton);
+        produktButtons.addClassName("admin-action-row");
 
         // Beide in ein gemeinsames horizontales Layout (2-Spalten: Felder links, Bild/Upload rechts)
         HorizontalLayout hauptLayout = new HorizontalLayout(feldLayout, bildUploadLayout);
+        hauptLayout.addClassName("admin-product-layout");
         hauptLayout.setWidthFull();
         hauptLayout.setSpacing(false);
         hauptLayout.setFlexGrow(2, feldLayout);
@@ -462,7 +526,6 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         // Erster Add-Aufruf (Header + Hauptlayout + Buttons)
         // Hinweis: Direkt darunter folgt ein zweiter Add-Aufruf mit mehr Komponenten.
         // Doppeltes Hinzufügen ähnlicher Komponenten kann zu doppelter Darstellung führen – falls das nicht gewünscht ist, prüfen.
-        productsBlock.add(produktHeader, hauptLayout, produktButtons );
 
         // Button-Leiste optisch verdichten
         produktButtons.getStyle().set("gap", "10px");
@@ -474,9 +537,7 @@ public class AdminView extends Composite<VerticalLayout> implements BeforeEnterL
         // Wenn doppelte Komponenten unerwünscht sind, ggf. konsolidieren (Struktur hier bewusst unverändert gelassen).
         productsBlock.add( produktHeader,
                 radioLayout,
-                feldLayout,
                 hauptLayout,
-                bildUploadLayout1,
                 produktButtons);
         productsLayout.add(productsBlock);
 

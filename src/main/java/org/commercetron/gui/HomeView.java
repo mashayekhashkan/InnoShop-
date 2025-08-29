@@ -146,48 +146,62 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // ---------- Kopfzeile mit Shop-Titel und Suchfeld ----------
         HorizontalLayout layoutRow = new HorizontalLayout();
+        layoutRow.addClassNames("shop-header", "home-toolbar");
         layoutRow.setWidthFull();
-        layoutRow.setHeight("100px");
+        layoutRow.setHeight("84px");
         layoutRow.setPadding(true);
         layoutRow.setSpacing(true);
         layoutRow.setAlignItems(FlexComponent.Alignment.CENTER);
-        layoutRow.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        layoutRow.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         layoutRow.getStyle()
                 .set("background-color", "#f9f9f9")
                 .set("border-bottom", "1px solid #e0e0e0")
                 .set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.03)");
 
-        H1 h1 = new H1("🛍️ InnoShop");
+        Div mark = new Div(VaadinIcon.CART.create());
+        mark.addClassName("brand-mark");
+
+        H1 h1 = new H1("InnoShop");
+        h1.addClassName("brand-title");
         h1.getStyle()
                 .set("margin", "0")
-                .set("font-size", "2rem")
-                .set("font-weight", "600")
-                .set("color", "#333");
+                .set("font-size", "1.45rem")
+                .set("font-weight", "800")
+                .set("color", "var(--innoshop-text)");
+
+        HorizontalLayout brand = new HorizontalLayout(mark, h1);
+        brand.setAlignItems(FlexComponent.Alignment.CENTER);
 
         TextField searchField = new TextField();
         searchField.setPlaceholder("Produkt suchen...");
         searchField.setClearButtonVisible(true);
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
 
-        layoutRow.add(h1, searchField); // Header-Layout mit Titel und Suche
+        layoutRow.add(brand, searchField); // Header-Layout mit Titel und Suche
 
         // ---------- Gesamtlayout vorbereiten ----------
         VerticalLayout mainLayout = getContent();
         mainLayout.removeAll();
         mainLayout.setWidthFull();
+        mainLayout.setPadding(false);
+        mainLayout.setSpacing(false);
+        mainLayout.addClassName("home-page");
         mainLayout.add(layoutRow); // Header hinzufügen
 
         // ---------- Kategorie-Tabs ----------
         Tabs categoryTabs = new Tabs();
-        categoryTabs.setWidth("600px");
+        categoryTabs.addClassName("category-tabs");
+        categoryTabs.setWidthFull();
         setCategoryTabs(categoryTabs, avatarItems); // Tabs aus Datenquelle initialisieren
 
         // ---------- Produktauswahl-Bereich ----------
-        avatarItems.setWidth("300px");
+        avatarItems.addClassName("catalog-list");
+        avatarItems.setWidthFull();
 
         // Produktbild
         productImage.setWidth("160px");
         productImage.setHeight("200px");
+        productImage.addClassName("detail-image");
         productImage.getStyle().set("object-fit", "contain"); // Kein Verzerren
 
         // Buttons für Warenkorb und Merkliste
@@ -199,11 +213,12 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // Produktinfo-Bereich
         productsInfoLayout.setId("product-info");
-        productsInfoLayout.setWidth("300px");
+        productsInfoLayout.setWidthFull();
 
         // Button-Layout
-        HorizontalLayout buttonLayout = new HorizontalLayout(buttonPrimary, buttonPrimary2);
-        buttonLayout.setWidth("150px");
+        VerticalLayout buttonLayout = new VerticalLayout(buttonPrimary, buttonPrimary2);
+        buttonLayout.addClassName("detail-actions");
+        buttonLayout.setWidthFull();
         buttonLayout.setSpacing(true);
         buttonLayout.setPadding(false);
         buttonLayout.getStyle()
@@ -214,37 +229,34 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // Linker Bereich mit Produktbild und Buttons
         VerticalLayout leftLayout = new VerticalLayout();
-        leftLayout.setHeight("280px");
-        leftLayout.setWidth("250px");
+        leftLayout.addClassName("detail-media");
+        leftLayout.setWidth("230px");
         leftLayout.setPadding(false);
-        leftLayout.setSpacing(false);
+        leftLayout.setSpacing(true);
         leftLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
         Div spacer = new Div(); // Platzhalter für gleichmäßige Verteilung
-        spacer.setWidthFull();
-        spacer.setHeightFull();
-        leftLayout.add(productImage, spacer, buttonLayout);
-        leftLayout.expand(spacer);
+        leftLayout.add(productImage, buttonLayout);
 
         // Rechter Bereich mit Produktinformationen
         VerticalLayout rightInfoLayout = new VerticalLayout();
-        rightInfoLayout.setWidth("220px");
-        rightInfoLayout.setHeight("220px");
-        rightInfoLayout.getStyle().set("overflow", "hidden");
+        rightInfoLayout.addClassName("detail-info");
+        rightInfoLayout.setWidthFull();
+        rightInfoLayout.getStyle().set("overflow", "visible");
         rightInfoLayout.setSpacing(true);
         rightInfoLayout.setPadding(false);
 
         productsInfoLayout.setWidthFull();
         productsInfoLayout.setHeightFull();
-        productsInfoLayout.getStyle().set("overflow", "auto");
+        productsInfoLayout.getStyle().set("overflow", "visible");
         rightInfoLayout.add(productsInfoLayout);
         rightInfoLayout.expand(productsInfoLayout);
 
         // Komplette Produkt-Detailkarte
         HorizontalLayout productCard = new HorizontalLayout(leftLayout, rightInfoLayout);
+        productCard.addClassName("detail-card");
         productCard.setSpacing(true);
-        productCard.setWidth("550px");
-        productCard.setHeight("320px");
+        productCard.setWidthFull();
         productCard.getStyle()
                 .set("border", "1px solid #ccc")
                 .set("border-radius", "8px")
@@ -258,6 +270,7 @@ public class HomeView extends Composite<VerticalLayout> {
                 new Hr(), // Visuelle Trennung
                 productCard
         );
+        mainContentLayout.addClassName("catalog-layout");
         mainContentLayout.setWidthFull();
         mainContentLayout.setSpacing(true);
         mainContentLayout.setAlignItems(FlexComponent.Alignment.START);
@@ -354,8 +367,9 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // ---------- TabSheet: Weitere Benutzeraktionen ----------
         TabSheet tabSheet = new TabSheet();
+        tabSheet.addClassName("tab-sheet");
         tabSheet.setWidthFull();
-        tabSheet.setHeight("400px");
+        tabSheet.setMinHeight("420px");
 
         tabSheet.add("Einkaufswagen", createEinkaufswagenContent());
         tabSheet.add("Merkliste", createMerklisteContent());
@@ -1308,6 +1322,7 @@ public class HomeView extends Composite<VerticalLayout> {
         multiSelectListBox.setRenderer(new ComponentRenderer<>(item -> {
             // Layout für die horizontale Darstellung von Bild + Infos
             HorizontalLayout layout = new HorizontalLayout();
+            layout.addClassName("list-product-row");
             layout.setAlignItems(FlexComponent.Alignment.CENTER); // Bild & Text vertikal zentrieren
 
             Image image;
@@ -1405,6 +1420,7 @@ public class HomeView extends Composite<VerticalLayout> {
 
         // Neues vertikales Layout zur Darstellung der Produktinformationen
         VerticalLayout infoLayout = new VerticalLayout();
+        infoLayout.addClassName("detail-info-stack");
         infoLayout.setSpacing(false);
         infoLayout.setPadding(false);
 

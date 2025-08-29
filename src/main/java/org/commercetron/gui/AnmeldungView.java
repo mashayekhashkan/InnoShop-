@@ -1,28 +1,22 @@
 package org.commercetron.gui;
 
-
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import lombok.extern.slf4j.Slf4j;
 import org.commercetron.beans.Admin;
 import org.commercetron.beans.Products;
@@ -37,118 +31,81 @@ import org.commercetron.dao.ProductsDAO;
 import org.commercetron.dao.UserDAO;
 import org.commercetron.dao.WarenkorbDAO;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
-/**
- * AnmeldungView stellt die Login-Oberfläche für Benutzer und Administratoren dar.
- *
- * Funktionen:
- * - Login mit Benutzer- oder Admin-Konto
- * - Validierung von E-Mail- und Passwortfeldern
- * - Fehlerversuchs-Zählung mit Sperrmechanismus (Lockout nach 3 Fehlversuchen für 3 Minuten)
- * - Weiterleitung nach erfolgreichem Login (Benutzer → Home, Admin → AdminView)
- * - Automatische Warenkorb-Aktualisierung, falls ein Produkt vorm Login ausgewählt wurde
- */
 @Slf4j
 @Route("anmelden")
 @PageTitle("Anmelden")
 @AnonymousAllowed
 public class AnmeldungView extends Composite<VerticalLayout> {
 
-    // Datenzugriffsobjekte für Benutzer, Admins, Produkte und Warenkorb
-    private final UserDAO dao;
     private final UserController userController;
-    private final AdminDAO adminDAO;
     private final AdminControler adminControler;
-    private final ProductsDAO productsDAO;
     private final ProductsController productsController;
-    private final WarenkorbDAO warenkorbDAO = new WarenkorbDAO(Warenkorb.class);
     private final WarenkorbController warenkorbController;
-    // Maps für fehlgeschlagene Logins und Sperrfristen
     private final Map<String, Integer> loginAttempts = new HashMap<>();
     private final Map<String, Long> lockedUntil = new HashMap<>();
 
-    /**
-     * Konstruktor: Initialisiert das Layout der Anmeldemaske.
-     */
     public AnmeldungView() {
-        this.dao = new UserDAO();
-        this.userController = new UserController(dao);
-        this.productsDAO = new ProductsDAO();
-        this.productsController = new ProductsController(productsDAO);
-        this.warenkorbController = new WarenkorbController(warenkorbDAO);
-        this.adminDAO = new AdminDAO();
-        this.adminControler = new AdminControler(adminDAO);
+        this.userController = new UserController(new UserDAO());
+        this.productsController = new ProductsController(new ProductsDAO());
+        this.warenkorbController = new WarenkorbController(new WarenkorbDAO(Warenkorb.class));
+        this.adminControler = new AdminControler(new AdminDAO());
         initLayout();
     }
 
-    /**
-     * Baut das Layout und die Anmeldelogik auf:
-     * - Formularfelder
-     * - Buttons (Login, Registrierung, Passwort vergessen)
-     * - Fehlerbehandlung (Eingabevalidierung, Fehlversuche, Lockout)
-     */
     private void initLayout() {
         VerticalLayout root = getContent();
+        root.removeAll();
         root.setSizeFull();
-        root.setJustifyContentMode(JustifyContentMode.CENTER);
-        root.setAlignItems(Alignment.CENTER);
+        root.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        root.setAlignItems(FlexComponent.Alignment.CENTER);
+        root.addClassName("auth-page");
 
-        // Card-Komponente für optisch zentrierte Darstellung
         Div card = new Div();
-        card.getStyle()
-                .set("padding", "2rem")
-                .set("box-shadow", "0 2px 10px rgba(0, 0, 0, 0.1)")
-                .set("border-radius", "8px")
-                .set("background-color", "white")
-                .set("width", "100%")
-                .set("max-width", "400px");
+        card.addClassName("auth-card");
 
-        // Titel
-        H2 title = new H2("Anmeldung");
+        Div brandMark = new Div(VaadinIcon.CART.create());
+        brandMark.addClassName("brand-mark");
 
-        // Eingabefeld: E-Mail
-        TextField emailField = new TextField("E-Mail");
-        emailField.setPlaceholder("beispiel@domain.com");
+        H2 title = new H2("Anmelden");
+        title.addClassName("auth-title");
+        Paragraph subtitle = new Paragraph("Melde dich an, um Warenkorb, Merkliste und Bestellungen zu verwalten.");
+        subtitle.addClassName("muted-text");
+
+        TextField emailField = new TextField("E-Mail oder Admin-Name");
+        emailField.setPlaceholder("name@domain.com");
+        emailField.setPrefixComponent(VaadinIcon.ENVELOPE.create());
         emailField.setWidthFull();
 
-        // Eingabefeld: Passwort
         PasswordField passwordField = new PasswordField("Passwort");
+        passwordField.setPrefixComponent(VaadinIcon.LOCK.create());
         passwordField.setWidthFull();
 
-        // Fehlerlabel (wird nur bei Validierungsfehlern sichtbar)
         Span errorLabel = new Span();
-        errorLabel.getStyle().set("color", "red");
+        errorLabel.addClassName("error-text");
         errorLabel.setVisible(false);
 
-        // Login-Button
-        Button loginButton = new Button("Login", VaadinIcon.SIGN_IN.create());
+        Button loginButton = new Button("Einloggen", VaadinIcon.SIGN_IN.create());
         loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         loginButton.setWidthFull();
 
-        // Button: Registrierung
         Button registerButton = new Button("Neues Konto erstellen");
         registerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         registerButton.setWidthFull();
-        registerButton.addClickListener(e ->
-                getUI().ifPresent(ui -> ui.navigate("registrieren"))
-        );
+        registerButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("registrieren")));
 
-        // Button: Passwort zurücksetzen
         Button forgotPassword = new Button("Passwort vergessen?");
         forgotPassword.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
         forgotPassword.setWidthFull();
-        forgotPassword.addClickListener(event ->
-                getUI().ifPresent(ui -> ui.navigate("passwordVergessenView"))
-        );
+        forgotPassword.addClickListener(event -> getUI().ifPresent(ui -> ui.navigate("passwordVergessenView")));
 
-        // Layout für Formularelemente
         VerticalLayout formLayout = new VerticalLayout(
+                brandMark,
                 title,
+                subtitle,
                 emailField,
                 passwordField,
                 loginButton,
@@ -164,96 +121,85 @@ public class AnmeldungView extends Composite<VerticalLayout> {
         card.add(formLayout);
         root.add(card);
 
-        // Login-Logik
-        loginButton.addClickListener(e -> {
-            String email = emailField.getValue();
-            String password = passwordField.getValue();
-            long now = System.currentTimeMillis();
+        loginButton.addClickListener(e -> login(emailField, passwordField, errorLabel));
+    }
 
-            // Überprüfen, ob Konto gesperrt ist
-            if (lockedUntil.containsKey(email)) {
-                long unlockedTime = lockedUntil.get(email);
-                if (now < unlockedTime) {
-                    long secondsLeft = (unlockedTime - now) / 1000;
-                    errorLabel.setText("Konto gesperrt. Bitte warte " + secondsLeft + " Sekunden.");
-                    errorLabel.setVisible(true);
-                    return;
-                } else {
-                    // Lockout abgelaufen → zurücksetzen
-                    lockedUntil.remove(email);
-                    loginAttempts.remove(email);
-                }
-            }
+    private void login(TextField emailField, PasswordField passwordField, Span errorLabel) {
+        String email = emailField.getValue().trim();
+        String password = passwordField.getValue();
+        long now = System.currentTimeMillis();
 
-            // Pflichtfeldprüfung
-            if (email.isEmpty() || password.isEmpty()) {
-                errorLabel.setText("Bitte E-Mail und Passwort eingeben.");
-                errorLabel.setVisible(true);
+        if (lockedUntil.containsKey(email)) {
+            long unlockedTime = lockedUntil.get(email);
+            if (now < unlockedTime) {
+                long secondsLeft = (unlockedTime - now) / 1000;
+                showError(errorLabel, "Konto gesperrt. Bitte warte " + secondsLeft + " Sekunden.");
                 return;
             }
+            lockedUntil.remove(email);
+            loginAttempts.remove(email);
+        }
 
-            // Benutzer-Authentifizierung
-            User user = userController.findByEmail(email);
-            boolean userSuccess = user != null && user.getPassword().equals(password);
+        if (email.isEmpty() || password.isEmpty()) {
+            showError(errorLabel, "Bitte E-Mail und Passwort eingeben.");
+            return;
+        }
 
-            // Admin-Authentifizierung (falls User nicht erfolgreich)
-            Admin admin = null;
-            boolean adminSuccess = false;
-            if (!userSuccess) {
-                admin = adminControler.getByExactName(email);
-                adminSuccess = admin != null && admin.getPassword().equals(password);
-            }
+        User user = userController.findByEmail(email);
+        boolean userSuccess = user != null && user.getPassword().equals(password);
 
-            // Erfolgreicher Login
-            if (userSuccess || adminSuccess) {
-                // Fehlversuche zurücksetzen
-                loginAttempts.remove(email);
-                lockedUntil.remove(email);
-                errorLabel.setVisible(false);
+        Admin admin = null;
+        boolean adminSuccess = false;
+        if (!userSuccess) {
+            admin = adminControler.getByExactName(email);
+            adminSuccess = admin != null && admin.getPassword().equals(password);
+        }
 
-                if (userSuccess) {
-                    // User in Session speichern
-                    VaadinSession.getCurrent().setAttribute(User.class, user);
+        if (userSuccess || adminSuccess) {
+            loginAttempts.remove(email);
+            lockedUntil.remove(email);
+            errorLabel.setVisible(false);
 
-                    // Falls während nicht eingeloggtem Zustand ein Produkt angefordert wurde
-                    Object pendingProductId = VaadinSession.getCurrent().getAttribute("pendingProductId");
-                    if (pendingProductId != null) {
-                        UUID productId = (UUID) pendingProductId;
-                        Products product = (Products) productsController.getById(productId);
-
-                        if (product != null) {
-                            warenkorbController.getFuegeProduktHinzu(user, product, 1);
-                            Notification.show("Produkt wurde dem Einkaufswagen hinzugefügt!");
-                        }
-
-                        // Pending-Eintrag zurücksetzen
-                        VaadinSession.getCurrent().setAttribute("pendingProductId", null);
-                    }
-
-                    // Navigation zum Home-Bereich
-                    getUI().ifPresent(ui -> ui.navigate("home"));
-                } else {
-                    // Admin in Session speichern und weiterleiten
-                    VaadinSession.getCurrent().setAttribute(Admin.class, admin);
-                    getUI().ifPresent(ui -> ui.navigate("adminView"));
-                }
-                return;
-            }
-
-            // Fehlversuch zählen
-            int attempts = loginAttempts.getOrDefault(email, 0) + 1;
-            loginAttempts.put(email, attempts);
-
-            if (attempts >= 3) {
-                // Konto für 3 Minuten sperren
-                lockedUntil.put(email, now + 3 * 60 * 1000);
-                errorLabel.setText("Zu viele Fehlversuche. Konto für 3 Minuten gesperrt.");
+            if (userSuccess) {
+                VaadinSession.getCurrent().setAttribute(User.class, user);
+                addPendingProductToCart(user);
+                getUI().ifPresent(ui -> ui.navigate("home"));
             } else {
-                errorLabel.setText("Benutzername oder Passwort ist ungültig. (" + attempts + "/3)");
+                VaadinSession.getCurrent().setAttribute(Admin.class, admin);
+                getUI().ifPresent(ui -> ui.navigate("adminView"));
             }
+            return;
+        }
 
-            errorLabel.setVisible(true);
-        });
+        int attempts = loginAttempts.getOrDefault(email, 0) + 1;
+        loginAttempts.put(email, attempts);
+
+        if (attempts >= 3) {
+            lockedUntil.put(email, now + 3 * 60 * 1000);
+            showError(errorLabel, "Zu viele Fehlversuche. Konto fuer 3 Minuten gesperrt.");
+        } else {
+            showError(errorLabel, "Benutzername oder Passwort ist ungueltig. (" + attempts + "/3)");
+        }
+    }
+
+    private void addPendingProductToCart(User user) {
+        Object pendingProductId = VaadinSession.getCurrent().getAttribute("pendingProductId");
+        if (pendingProductId == null) {
+            return;
+        }
+
+        UUID productId = (UUID) pendingProductId;
+        Products product = (Products) productsController.getById(productId);
+        if (product != null) {
+            warenkorbController.getFuegeProduktHinzu(user, product, 1);
+            Notification.show("Produkt wurde dem Einkaufswagen hinzugefuegt!");
+        }
+
+        VaadinSession.getCurrent().setAttribute("pendingProductId", null);
+    }
+
+    private void showError(Span errorLabel, String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
     }
 }
-
