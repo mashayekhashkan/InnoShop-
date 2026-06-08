@@ -1,0 +1,550 @@
+:root {
+  --innoshop-bg: #f5f7fb;
+  --innoshop-surface: #ffffff;
+  --innoshop-surface-muted: #eef3f8;
+  --innoshop-text: #172033;
+  --innoshop-muted: #637083;
+  --innoshop-primary: #176b87;
+  --innoshop-primary-dark: #0f4d63;
+  --innoshop-accent: #d97706;
+  --innoshop-border: #dbe3ee;
+  --innoshop-shadow: 0 18px 45px rgba(23, 32, 51, 0.10);
+  --innoshop-radius: 8px;
+  --lumo-primary-color: var(--innoshop-primary);
+  --lumo-primary-color-50pct: rgba(23, 107, 135, 0.50);
+  --lumo-primary-color-10pct: rgba(23, 107, 135, 0.12);
+  --lumo-primary-text-color: var(--innoshop-primary);
+  --lumo-border-radius-m: 8px;
+}
+
+html,
+body {
+  background: var(--innoshop-bg);
+  color: var(--innoshop-text);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+vaadin-button {
+  font-weight: 700;
+}
+
+.shop-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(238, 243, 248, 0.98) 0%, rgba(245, 247, 251, 1) 42%),
+    var(--innoshop-bg);
+}
+
+.shop-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.shop-header {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom: 1px solid var(--innoshop-border);
+  box-shadow: 0 10px 30px rgba(23, 32, 51, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+.shop-header-inner {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 74px;
+  margin: 0 auto;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--innoshop-primary), #43a6b7);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgba(23, 107, 135, 0.22);
+}
+
+.brand-mark vaadin-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.brand-title {
+  margin: 0;
+  color: var(--innoshop-text);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.brand-subtitle,
+.muted-text {
+  color: var(--innoshop-muted);
+}
+
+.welcome-hero {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 390px;
+  margin: 0 auto;
+  padding: 64px 0 34px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  color: var(--innoshop-text);
+  font-size: clamp(2.5rem, 5vw, 5.25rem);
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.hero-copy p {
+  max-width: 650px;
+  margin: 22px 0 0;
+  color: var(--innoshop-muted);
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+.hero-actions {
+  margin-top: 28px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-panel {
+  min-height: 300px;
+  padding: 28px;
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface);
+  box-shadow: var(--innoshop-shadow);
+}
+
+.hero-stat {
+  padding: 18px;
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface-muted);
+}
+
+.hero-stat strong,
+.hero-stat .stat-value {
+  display: block;
+  color: var(--innoshop-primary-dark);
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.section-title {
+  margin: 0;
+  color: var(--innoshop-text);
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.section-kicker {
+  color: var(--innoshop-accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 22px;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 14px 0 64px;
+}
+
+.product-card {
+  overflow: hidden;
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface);
+  box-shadow: 0 12px 30px rgba(23, 32, 51, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(23, 107, 135, 0.32);
+  box-shadow: 0 20px 42px rgba(23, 32, 51, 0.13);
+}
+
+.product-card img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  background: #edf2f7;
+}
+
+.product-card-body {
+  padding: 18px;
+}
+
+.product-card h4 {
+  margin: 0;
+  min-height: 44px;
+  color: var(--innoshop-text);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.product-price {
+  color: var(--innoshop-primary-dark);
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.auth-page {
+  min-height: 100vh;
+  padding: 28px 16px;
+  background:
+    linear-gradient(135deg, rgba(23, 107, 135, 0.12) 0%, rgba(217, 119, 6, 0.10) 48%, rgba(245, 247, 251, 1) 100%);
+}
+
+.auth-card {
+  width: min(460px, 100%);
+  padding: 32px;
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface);
+  box-shadow: var(--innoshop-shadow);
+}
+
+.auth-card-wide {
+  width: min(560px, 100%);
+}
+
+.auth-title {
+  margin: 0;
+  color: var(--innoshop-text);
+  font-size: 1.75rem;
+  font-weight: 900;
+}
+
+.error-text {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.home-page {
+  min-height: 100vh;
+  background: var(--innoshop-bg);
+}
+
+.home-main {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 48px;
+}
+
+.home-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.home-toolbar vaadin-text-field {
+  width: min(440px, 100%);
+}
+
+.category-tabs {
+  width: 100%;
+  margin: 18px 0;
+  padding: 6px;
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface);
+}
+
+.home-page > .category-tabs,
+.home-page > .catalog-layout,
+.home-page > .tab-sheet {
+  width: min(1180px, calc(100% - 32px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.catalog-layout {
+  display: grid !important;
+  grid-template-columns: minmax(300px, 1fr) minmax(460px, 0.95fr);
+  gap: 22px;
+  width: 100%;
+  align-items: start;
+}
+
+.catalog-layout > hr {
+  display: none;
+}
+
+.catalog-list,
+.detail-card,
+.content-panel {
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface);
+  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.07);
+}
+
+.catalog-list {
+  min-height: 360px;
+  padding: 8px;
+}
+
+.detail-card {
+  width: min(720px, 100%) !important;
+  min-height: 0 !important;
+  justify-self: start;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 18px;
+  flex-wrap: nowrap;
+}
+
+.detail-image {
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: #f8fafc;
+}
+
+.detail-media {
+  flex: 0 0 230px;
+  min-width: 0;
+  gap: 12px;
+}
+
+.detail-actions {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-actions vaadin-button {
+  width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.detail-info {
+  flex: 1 1 0;
+  min-width: 260px;
+  max-width: 420px;
+}
+
+.detail-info-stack {
+  gap: 8px;
+}
+
+.detail-info-stack h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.detail-info-stack p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tab-sheet {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.list-product-row {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--innoshop-radius);
+}
+
+.list-product-row:hover {
+  background: #f6f9fc;
+}
+
+.list-product-row img {
+  border-radius: var(--innoshop-radius);
+  object-fit: cover;
+  background: #edf2f7;
+}
+
+.admin-shell {
+  width: min(1180px, calc(100% - 32px)) !important;
+  margin: 0 auto;
+  padding: 24px 0 48px;
+  align-items: stretch !important;
+}
+
+.admin-shell h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 900;
+}
+
+.admin-tabs {
+  width: 100%;
+}
+
+.admin-category-row,
+.admin-product-layout,
+.admin-action-row {
+  width: 100%;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-category-row > vaadin-text-field {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.admin-action-row vaadin-button {
+  flex: 1 1 150px;
+  min-width: max-content;
+}
+
+.admin-filter-row {
+  margin-left: 0 !important;
+  padding: 0;
+}
+
+.admin-product-layout {
+  align-items: flex-start;
+}
+
+.admin-product-layout > vaadin-form-layout,
+.admin-product-layout > vaadin-vertical-layout {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+
+.admin-upload-panel {
+  border: 1px solid var(--innoshop-border);
+  border-radius: var(--innoshop-radius);
+  background: var(--innoshop-surface);
+  padding: 14px;
+}
+
+.admin-upload-panel img {
+  max-height: 260px;
+  width: 100%;
+  object-fit: contain;
+  background: #f8fafc;
+}
+
+vaadin-tab-sheet::part(content) {
+  overflow-x: hidden;
+}
+
+@media (max-width: 760px) {
+  .welcome-hero,
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-toolbar {
+    height: auto !important;
+    padding: 12px 16px !important;
+  }
+
+  .home-toolbar > vaadin-horizontal-layout,
+  .home-toolbar vaadin-text-field {
+    width: 100% !important;
+  }
+
+  .category-tabs {
+    overflow-x: auto;
+  }
+
+  .shop-header-inner,
+  .hero-actions {
+    align-items: stretch;
+  }
+
+  .hero-copy h1 {
+    font-size: 2.6rem;
+  }
+
+  .hero-panel {
+    min-height: auto;
+  }
+
+  .auth-card {
+    padding: 24px;
+  }
+
+  .detail-card {
+    padding: 16px;
+    flex-wrap: wrap;
+  }
+
+  .detail-card > vaadin-vertical-layout,
+  .detail-card > vaadin-horizontal-layout {
+    width: 100% !important;
+  }
+
+  .detail-media {
+    flex-basis: 100%;
+    height: auto !important;
+    min-width: 0;
+  }
+
+  .detail-media img {
+    width: min(220px, 100%) !important;
+  }
+
+  .detail-info {
+    flex-basis: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .admin-shell {
+    width: min(100% - 20px, 1180px) !important;
+    padding: 16px 0 32px;
+  }
+
+  .admin-category-row {
+    align-items: stretch !important;
+  }
+
+  .admin-action-row vaadin-button {
+    min-width: 0;
+  }
+
+  .admin-upload-panel img {
+    max-height: 210px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions vaadin-button,
+  .admin-action-row vaadin-button {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .catalog-list {
+    min-height: auto;
+  }
+
+  .list-product-row {
+    padding: 8px;
+  }
+}

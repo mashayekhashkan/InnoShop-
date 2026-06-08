@@ -21,7 +21,7 @@
 ---
 
 <p align="center">
-  <img src="Inno-shopHome.JPG" alt="InnoShop Home Page" width="900">
+  <img src="./assets/Inno-shopHome.JPG" alt="InnoShop Home" width="900">
 </p>
 
 ---
@@ -46,7 +46,7 @@ The main goal of this project is to show a clean Java web application architectu
 The home page provides a clean landing screen with login, registration and highlighted products.
 
 <p align="center">
-  <img src="Inno-shopHome.JPG" alt="InnoShop Home Page" width="900">
+  <img src="./assets/shopin.JPG" alt="InnoShop Shop" width="900">
 </p>
 
 ---
@@ -56,9 +56,8 @@ The home page provides a clean landing screen with login, registration and highl
 The shop view allows users to browse products by category, view product details and manage their shopping cart.
 
 <p align="center">
-  <img src="shopin.JPG" alt="InnoShop Shop and Cart" width="900">
+  <img src="assets/shopin.JPG" alt="InnoShop Shop" width="900">
 </p>
-
 ---
 
 ### 🛠️ Admin Dashboard
@@ -66,7 +65,7 @@ The shop view allows users to browse products by category, view product details 
 The admin dashboard provides product and category management. Products can be edited, saved, activated or deactivated.
 
 <p align="center">
-  <img src="admin-dash.JPG" alt="InnoShop Admin Dashboard" width="900">
+  <img src="./assets/admin-dash.JPG" alt="InnoShop Admin Dashboard" width="900">
 </p>
 
 ---
