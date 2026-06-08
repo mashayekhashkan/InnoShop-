@@ -26,7 +26,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -63,7 +63,7 @@ import java.util.List;
  */
 @PageTitle("AdminView")
 @Route("adminView")
-public class AdminView extends Composite<VerticalLayout> implements BeforeEnterListener {
+public class AdminView extends Composite<VerticalLayout> implements BeforeEnterObserver {
 
     /**
      * DAO- und Controller-Instanzen für Kategorieverwaltung
