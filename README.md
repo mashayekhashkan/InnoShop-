@@ -41,13 +41,7 @@ The main goal of this project is to show a clean Java web application architectu
 
 ## 🖼️ Preview
 
-### 🏠 Home Page
 
-The home page provides a clean landing screen with login, registration and highlighted products.
-
-<p align="center">
-  <img src="./assets/shopin.JPG" alt="InnoShop Shop" width="900">
-</p>
 
 ---
 
