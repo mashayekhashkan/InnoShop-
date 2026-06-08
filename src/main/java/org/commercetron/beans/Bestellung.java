@@ -29,6 +29,7 @@ import java.util.UUID;
 @Entity
 @Data
 @Table(name = "bestellung")
+
 public class Bestellung {
 
     /**
