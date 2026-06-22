@@ -26,7 +26,7 @@
 
 ---
 
-## 🧭 About the Project
+##  About the Project
 
 Step into the world of modern online shopping with **InnoShop**.
 
@@ -39,13 +39,13 @@ The main goal of this project is to show a clean Java web application architectu
 
 ---
 
-## 🖼️ Preview
+##  Preview
 
 
 
 ---
 
-### 🛒 Shop & Shopping Cart
+###  Shop & Shopping Cart
 
 The shop view allows users to browse products by category, view product details and manage their shopping cart.
 
@@ -54,7 +54,7 @@ The shop view allows users to browse products by category, view product details 
 </p>
 ---
 
-### 🛠️ Admin Dashboard
+###  Admin Dashboard
 
 The admin dashboard provides product and category management. Products can be edited, saved, activated or deactivated.
 
@@ -64,7 +64,7 @@ The admin dashboard provides product and category management. Products can be ed
 
 ---
 
-## ✨ Features
+##  Features
 
 - Modern e-commerce user interface
 - Product overview with images, prices and descriptions
@@ -82,31 +82,31 @@ The admin dashboard provides product and category management. Products can be ed
 
 ---
 
-## 🧩 Core Functionality
+##  Core Functionality
 
-### 🛍️ Product Browsing
+###  Product Browsing
 
 Users can browse products from different categories such as electronics, cosmetics, furniture and accessories.
 
-### 🛒 Shopping Cart
+###  Shopping Cart
 
 Products can be added to the cart. Users can adjust quantities and view the calculated total price.
 
-### ❤️ Wishlist
+###  Wishlist
 
 Users can save products to a wishlist and access them later.
 
-### 📦 Orders
+###  Orders
 
 The application supports order-related functionality such as order placement and viewing order history.
 
-### 🛠️ Admin Panel
+###  Admin Panel
 
 Administrators can manage products, edit existing product data, upload product images and control product availability.
 
 ---
 
-## 🚧 Coming Soon
+##  Coming Soon
 
 - Real payment integration, for example Stripe
 - Shipping API integration
@@ -119,7 +119,7 @@ Administrators can manage products, edit existing product data, upload product i
 
 ---
 
-## 📖 About the Repository
+##  About the Repository
 
 This repository was created as an educational and portfolio project.
 
@@ -129,7 +129,7 @@ The application follows a layered structure where the user interface, business l
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```text
 ┌─────────────────────────────────┐
@@ -154,7 +154,7 @@ The application follows a layered structure where the user interface, business l
 ┌────────────────▼────────────────┐
 │        PostgreSQL Database      │
 └─────────────────────────────────┘
-🧰 Technology Stack
+ Technology Stack
 Java 17+
 Vaadin
 JPA / Hibernate
@@ -162,7 +162,7 @@ PostgreSQL
 Maven
 MVC Architecture
 IntelliJ IDEA
-📁 Project Structure
+ Project Structure
 InnoShop/
 ├── src/
 │   └── main/
@@ -183,7 +183,7 @@ InnoShop/
 │       └── webapp/
 ├── pom.xml
 └── README.md
-⚙️ Usage
+ Usage
 # Clone the repository
 git clone https://github.com/mashayekhashkan/InnoShop-
 
@@ -196,7 +196,7 @@ mvn jetty:run
 Then open the application in your browser:
 
 http://localhost:9090
-🗄️ Database Setup
+ Database Setup
 
 Start PostgreSQL and create the database:
 
@@ -206,7 +206,7 @@ Optional database user:
 
 CREATE USER innoshop_user WITH PASSWORD 'yourpassword';
 GRANT ALL PRIVILEGES ON DATABASE innoshop TO innoshop_user;
-🔧 Configuration
+ Configuration
 
 Configure your database connection in:
 
@@ -227,21 +227,21 @@ Example:
 
 Replace the username and password with your local PostgreSQL credentials.
 
-🔑 Default Login
+ Default Login
 Role	Username	Password
 Admin	admin	admin
 User	Register through the UI	—
 
-⚠️ Change the default admin credentials before using this project in a production environment.
+ Change the default admin credentials before using this project in a production environment.
 
-🧪 Development Notes
+ Development Notes
 
 The application is currently in development.
 Payment and shipping processes are simulated. Real external service integrations are planned for future versions.
 
-📌 Project Status
+ Project Status
 Status: In Development
 Version: Portfolio / Educational Project
-📄 License
+ License
 
 This project was created for educational, demonstration and portfolio purposes.
