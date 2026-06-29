@@ -128,8 +128,7 @@ The project demonstrates how a Java-based e-commerce system can be structured an
 The application follows a layered structure where the user interface, business logic and database access are separated into different packages.
 
 ---
-
-##  Architecture
+## Architecture
 
 ```text
 ┌─────────────────────────────────┐
@@ -154,15 +153,21 @@ The application follows a layered structure where the user interface, business l
 ┌────────────────▼────────────────┐
 │        PostgreSQL Database      │
 └─────────────────────────────────┘
- Technology Stack
-Java 17+
-Vaadin
-JPA / Hibernate
-PostgreSQL
-Maven
-MVC Architecture
-IntelliJ IDEA
- Project Structure
+```
+
+## Technology Stack
+
+- Java 17+
+- Vaadin
+- JPA / Hibernate
+- PostgreSQL
+- Maven
+- MVC Architecture
+- IntelliJ IDEA
+
+## Project Structure
+
+```text
 InnoShop/
 ├── src/
 │   └── main/
@@ -183,37 +188,60 @@ InnoShop/
 │       └── webapp/
 ├── pom.xml
 └── README.md
- Usage
-# Clone the repository
+```
+
+## Usage
+
+Clone the repository:
+
+```bash
 git clone https://github.com/mashayekhashkan/InnoShop-
+```
 
-# Navigate to the project directory
+Navigate to the project directory:
+
+```bash
 cd InnoShop-
+```
 
-# Start the application with Maven
+Start the application with Maven:
+
+```bash
 mvn jetty:run
+```
 
 Then open the application in your browser:
 
+```text
 http://localhost:9090
- Database Setup
+```
+
+## Database Setup
 
 Start PostgreSQL and create the database:
 
+```sql
 CREATE DATABASE innoshop;
+```
 
 Optional database user:
 
+```sql
 CREATE USER innoshop_user WITH PASSWORD 'yourpassword';
 GRANT ALL PRIVILEGES ON DATABASE innoshop TO innoshop_user;
- Configuration
+```
+
+## Configuration
 
 Configure your database connection in:
 
+```text
 src/main/resources/META-INF/persistence.xml
+```
 
 Example:
 
+```xml
 <persistence-unit name="innoshop">
     <properties>
         <property name="jakarta.persistence.jdbc.url"
@@ -224,24 +252,30 @@ Example:
                   value="your_password"/>
     </properties>
 </persistence-unit>
+```
 
 Replace the username and password with your local PostgreSQL credentials.
 
- Default Login
-Role	Username	Password
-Admin	admin	admin
-User	Register through the UI	—
+## Default Login
 
- Change the default admin credentials before using this project in a production environment.
+| Role  | Username                | Password |
+|-------|-------------------------|----------|
+| Admin | admin                   | admin    |
+| User  | Register through the UI | —        |
 
- Development Notes
+> Change the default admin credentials before using this project in a production environment.
 
-The application is currently in development.
+## Development Notes
+
+The application is currently in development.  
 Payment and shipping processes are simulated. Real external service integrations are planned for future versions.
 
- Project Status
-Status: In Development
-Version: Portfolio / Educational Project
- License
+## Project Status
+
+**Status:** In Development  
+**Version:** Portfolio / Educational Project
+
+## License
 
 This project was created for educational, demonstration and portfolio purposes.
+```
